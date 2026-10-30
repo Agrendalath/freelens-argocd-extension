@@ -1,7 +1,7 @@
-import { Renderer } from "@freelensapp/extensions";
+import { Common, Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "../navigation";
 import { getArgoCdApiClient } from "../argocd-api";
 import { ArgoConnectionSourceBanner } from "../components/argo-connection-source";
 import { withErrorPage } from "../components/error-page";
@@ -15,20 +15,19 @@ import {
 } from "../menus";
 import { ArgoRoutes } from "../routes/argo-routes";
 import styles from "./argo-application-api-details-page.module.scss";
-import stylesInline from "./argo-application-api-details-page.module.scss?inline";
 
 import type { ArgoApplication } from "../k8s/argocd";
 
 export interface ArgoApiApplicationDetailsPageProps {
   extension: Renderer.LensExtension;
+  params: Common.Types.PageComponentProps["params"];
 }
 
 export const ArgoApiApplicationDetailsPage = observer((props: ArgoApiApplicationDetailsPageProps) =>
   withErrorPage(props, () => {
     const { extension } = props;
-    const params = useParams<{ namespace?: string; name?: string }>();
-    const namespaceParam = params.namespace ?? "_";
-    const name = params.name ?? "";
+    const namespaceParam = props.params.namespace?.get() ?? "_";
+    const name = props.params.name?.get() ?? "";
     const appNamespace = namespaceParam === "_" ? undefined : namespaceParam;
     const [application, setApplication] = useState<ArgoApplication | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -68,9 +67,7 @@ export const ArgoApiApplicationDetailsPage = observer((props: ArgoApiApplication
     }, [appNamespace, name]);
 
     return (
-      <>
-        <style>{stylesInline}</style>
-        <div className={styles.root}>
+      <div className={styles.root}>
           <ArgoConnectionSourceBanner />
           <div className={styles.header}>
             <Link className={styles.backLink} to={ArgoRoutes.argocd.applications}>
@@ -99,8 +96,7 @@ export const ArgoApiApplicationDetailsPage = observer((props: ArgoApiApplication
               />
             </div>
           ) : null}
-        </div>
-      </>
+      </div>
     );
   }),
 );

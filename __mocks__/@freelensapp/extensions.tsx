@@ -41,6 +41,11 @@ export const PieChart = jest.fn(({ data }: AnyRecord) => (
 export const Renderer = {
   LensExtension: class {},
   Component: {
+    MaybeLink: ({ children, to, ...props }: AnyRecord) => (
+      <a href={typeof to === "string" ? to : to?.pathname} {...props}>
+        {children}
+      </a>
+    ),
     // charts
     PieChart,
 

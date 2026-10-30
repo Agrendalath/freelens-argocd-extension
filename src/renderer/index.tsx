@@ -186,6 +186,21 @@ export default class ArgoRenderer extends Renderer.LensExtension {
 
   clusterPageMenus = buildClusterPageMenus();
 
+  customResources = [
+    ArgoApplication,
+    ArgoApplicationSet,
+    ArgoAppProject,
+    ArgoAnalysisRun,
+    ArgoAnalysisTemplate,
+    ArgoClusterAnalysisTemplate,
+    ArgoExperiment,
+    ArgoRollout,
+    ArgoClusterWorkflowTemplate,
+    ArgoCronWorkflow,
+    ArgoWorkflow,
+    ArgoWorkflowTemplate,
+  ];
+
   kubeObjectMenuItems = [
     createKubeObjectMenuRegistration({
       kind: ArgoApplication.kind,

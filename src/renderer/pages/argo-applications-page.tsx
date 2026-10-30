@@ -1,7 +1,7 @@
 import { Common, Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../navigation";
 import { getArgoCdApiClient, getArgoCdDataSource, getArgoPreferences, useArgoCdApiQuery } from "../argocd-api";
 import { argoApiApplicationDrawerStore } from "../components/argo-api-details";
 import { ArgoApiCheckboxFilter, ArgoApiListToolbar, useArgoApiApplicationFilters } from "../components/argo-api-list";
@@ -11,9 +11,7 @@ import { StatusBadge } from "../components/shared";
 import { ArgoApplication, type ArgoApplicationApi, getArgoApplicationStore } from "../k8s/argocd";
 import { createEnumFromKeys } from "../utils";
 import apiListStyles from "./argo-api-list.module.scss";
-import apiListStylesInline from "./argo-api-list.module.scss?inline";
 import styles from "./argo-applications-page.module.scss";
-import stylesInline from "./argo-applications-page.module.scss?inline";
 
 const {
   Component: { KubeObjectAge, KubeObjectListLayout, Table, TableCell, TableHead, TableRow, WithTooltip },
@@ -75,7 +73,6 @@ const ArgoApplicationsClusterTabContent = observer(() => {
 
   return (
     <>
-      <style>{stylesInline}</style>
       <KubeObjectListLayout<ArgoApplication, ArgoApplicationApi>
         tableId={`${ArgoApplication.crd.plural}Table`}
         isConfigurable
@@ -144,8 +141,6 @@ const ArgoApplicationsApiTabContent = observer(() => {
 
   return (
     <>
-      <style>{stylesInline}</style>
-      <style>{apiListStylesInline}</style>
       <div className={apiListStyles.root}>
         <ArgoConnectionSourceBanner />
         {isLoading ? <div className={apiListStyles.loading}>Loading applications from Argo CD API...</div> : null}

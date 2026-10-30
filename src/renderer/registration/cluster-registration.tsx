@@ -5,7 +5,7 @@
  * `k8s/<product>/`, add pages/details/menus, then append entries here and in `index.tsx` if needed.
  */
 
-import { Renderer } from "@freelensapp/extensions";
+import { Common, Renderer } from "@freelensapp/extensions";
 import { ArgoPlainLogoIcon } from "../icons";
 import { ArgoApplication, ArgoApplicationSet, ArgoAppProject } from "../k8s/argocd";
 import {
@@ -76,7 +76,9 @@ export function buildClusterPages(extension: Renderer.LensExtension) {
       routePath: ArgoRoutes.argocd.applicationDetails,
       exact: true,
       components: {
-        Page: () => <ArgoApiApplicationDetailsPage extension={extension} />,
+        Page: ({ params }: Common.Types.PageComponentProps) => (
+          <ArgoApiApplicationDetailsPage extension={extension} params={params} />
+        ),
       },
     },
     {

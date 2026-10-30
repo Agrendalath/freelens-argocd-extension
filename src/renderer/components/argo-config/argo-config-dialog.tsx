@@ -19,7 +19,6 @@ import {
 } from "../../k8s/argocd";
 import { runGuardedArgoMutation } from "../../mutations";
 import styles from "./argo-config-dialog.module.scss";
-import stylesInline from "./argo-config-dialog.module.scss?inline";
 import { type ArgoConfigKind, argoConfigDialogStore } from "./argo-config-dialog-store";
 
 const {
@@ -820,9 +819,8 @@ export const ArgoConfigDialog = observer(() => {
   return (
     <Dialog isOpen={isOpen} close={closeDialog}>
       <>
-        <style>{stylesInline}</style>
         <div className={styles.dialogContent}>
-          <div className="flex gaps column">
+          <div className={styles.formFields}>
             <h3 className={styles.dialogHeader}>{title}</h3>
             {error && <div className={styles.dialogError}>{error}</div>}
             {target.kind === "repository" && renderRepoFields(target.kind)}
