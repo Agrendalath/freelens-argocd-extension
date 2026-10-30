@@ -10,7 +10,7 @@ export default defineConfig({
     build: {
       lib: {
         entry: resolve(__dirname, "src/main/index.ts"),
-        // Freelens 1.xx extensions are CommonJS modules
+        // The v2 host accepts a CommonJS main-process entry.
         formats: ["cjs"],
       },
       rollupOptions: {
@@ -26,29 +26,19 @@ export default defineConfig({
     },
     plugins: [
       react({
-        babel: {
-          plugins: [
-            [
-              "@babel/plugin-proposal-decorators",
-              {
-                version: "2023-05",
-              },
-            ],
-          ],
-        },
+        jsxRuntime: "automatic",
       }),
       externalizeDepsPlugin({
         // do not bundle modules provided by the host app
-        include: ["@freelensapp/extensions", "electron", "mobx"],
+        include: ["electron", "mobx"],
         // bundle proxy agent into the extension (not provided by Freelens runtime)
         exclude: ["hpagent"],
       }),
       pluginExternal({
         // the modules are provided by the host app as a global variable
         externals: {
-          "@freelensapp/extensions": "global.LensExtensions",
           electron: "commonjs electron",
-          mobx: "global.Mobx",
+          mobx: "globalThis.FreelensExtensionApi.Mobx",
         },
       }),
     ],
@@ -59,8 +49,8 @@ export default defineConfig({
     build: {
       lib: {
         entry: resolve(__dirname, "src/renderer/index.tsx"),
-        // Freelens 1.xx extensions are CommonJS modules
-        formats: ["cjs"],
+        // The v2 host loads renderer extensions as ES modules from a URL.
+        formats: ["es"],
       },
       outDir: "out/renderer",
       rollupOptions: {
@@ -98,13 +88,10 @@ export default defineConfig({
       externalizeDepsPlugin({
         // do not bundle modules provided by the host app
         include: [
-          "@freelensapp/extensions",
-          "electron",
           "mobx",
           "mobx-react",
           "react",
           "react-dom",
-          "react-router-dom",
         ],
         // bundle all other modules (incl. hpagent for Argo CD API proxy)
         exclude: ["hpagent"],
@@ -112,13 +99,11 @@ export default defineConfig({
       pluginExternal({
         // the modules are provided by the host app as a global variable
         externals: {
-          "@freelensapp/extensions": "global.LensExtensions",
-          mobx: "global.Mobx",
-          "mobx-react": "global.MobxReact",
-          react: "global.React",
-          "react-dom": "global.ReactDom",
-          "react-router-dom": "global.ReactRouterDom",
-          "react/jsx-runtime": "global.ReactJsxRuntime",
+          mobx: "globalThis.FreelensExtensionApi.Mobx",
+          "mobx-react": "globalThis.FreelensExtensionApi.MobxReact",
+          react: "globalThis.FreelensExtensionApi.React",
+          "react-dom": "globalThis.FreelensExtensionApi.ReactDom",
+          "react/jsx-runtime": "globalThis.FreelensExtensionApi.ReactJsxRuntime",
         },
       }),
     ],
