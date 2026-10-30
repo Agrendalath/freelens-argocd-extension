@@ -1,6 +1,5 @@
 import { Common, Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
-import { Link } from "../navigation";
 import { getArgoCdApiClient, getArgoCdDataSource, getArgoPreferences, useArgoCdApiQuery } from "../argocd-api";
 import { ArgoApiListToolbar, useArgoApiListFilters } from "../components/argo-api-list";
 import { ArgoCdApiMisconfiguredNotice, ArgoConnectionSourceBanner } from "../components/argo-connection-source";
@@ -13,6 +12,7 @@ import {
   getArgoApplicationSetStore,
   getGeneratedApplicationCount,
 } from "../k8s/argocd";
+import { Link } from "../navigation";
 import apiListStyles from "./argo-api-list.module.scss";
 import styles from "./argo-applicationsets-page.module.scss";
 

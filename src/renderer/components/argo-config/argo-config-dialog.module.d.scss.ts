@@ -2,6 +2,7 @@ declare const classNames: {
   readonly dialogContent: "dialogContent";
   readonly dialogHeader: "dialogHeader";
   readonly dialogActions: "dialogActions";
+  readonly formFields: "formFields";
   readonly dialogError: "dialogError";
   readonly textArea: "textArea";
   readonly kvRow: "kvRow";

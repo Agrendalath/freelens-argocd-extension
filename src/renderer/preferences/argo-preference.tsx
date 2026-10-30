@@ -62,7 +62,7 @@ export const ArgoPreferenceInput = observer(() => {
                 name="argo-connection-mode"
                 checked={!apiMode}
                 onChange={() => {
-                  preferences.connectionMode = "cluster";
+                  preferences.setConnectionMode("cluster");
                   setTestMessage(null);
                 }}
               />
@@ -74,7 +74,7 @@ export const ArgoPreferenceInput = observer(() => {
                 name="argo-connection-mode"
                 checked={apiMode}
                 onChange={() => {
-                  preferences.connectionMode = "api";
+                  preferences.setConnectionMode("api");
                   setTestMessage(null);
                   if (preferences.apiConnections.length === 0) {
                     preferences.addApiConnection({ name: "Argo CD 1" });

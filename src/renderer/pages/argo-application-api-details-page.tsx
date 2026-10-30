@@ -1,7 +1,6 @@
 import { Common, Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
 import { useEffect, useState } from "react";
-import { Link } from "../navigation";
 import { getArgoCdApiClient } from "../argocd-api";
 import { ArgoConnectionSourceBanner } from "../components/argo-connection-source";
 import { withErrorPage } from "../components/error-page";
@@ -13,6 +12,7 @@ import {
   ArgoSyncWithOptionsMenuItem,
   ArgoTerminateMenuItem,
 } from "../menus";
+import { Link } from "../navigation";
 import { ArgoRoutes } from "../routes/argo-routes";
 import styles from "./argo-application-api-details-page.module.scss";
 
@@ -68,34 +68,30 @@ export const ArgoApiApplicationDetailsPage = observer((props: ArgoApiApplication
 
     return (
       <div className={styles.root}>
-          <ArgoConnectionSourceBanner />
-          <div className={styles.header}>
-            <Link className={styles.backLink} to={ArgoRoutes.argocd.applications}>
-              ← Applications
-            </Link>
-            <h5 className={styles.title}>{name || "Application"}</h5>
-            {application ? (
-              <div className={styles.actions}>
-                <ArgoRefreshMenuItem object={application} toolbar extension={extension} />
-                <ArgoHardRefreshMenuItem object={application} toolbar extension={extension} />
-                <ArgoSyncMenuItem object={application} toolbar extension={extension} />
-                <ArgoSyncWithOptionsMenuItem object={application} toolbar extension={extension} />
-                <ArgoTerminateMenuItem object={application} toolbar extension={extension} />
-              </div>
-            ) : null}
-          </div>
-
-          {isLoading ? <div className={styles.loading}>Loading application...</div> : null}
-          {error ? <div className={styles.error}>{error}</div> : null}
-          {!isLoading && !error && application ? (
-            <div className={styles.body}>
-              <ArgoApplicationDetails
-                object={application}
-                extension={extension}
-                onApplicationUpdated={setApplication}
-              />
+        <ArgoConnectionSourceBanner />
+        <div className={styles.header}>
+          <Link className={styles.backLink} to={ArgoRoutes.argocd.applications}>
+            ← Applications
+          </Link>
+          <h5 className={styles.title}>{name || "Application"}</h5>
+          {application ? (
+            <div className={styles.actions}>
+              <ArgoRefreshMenuItem object={application} toolbar extension={extension} />
+              <ArgoHardRefreshMenuItem object={application} toolbar extension={extension} />
+              <ArgoSyncMenuItem object={application} toolbar extension={extension} />
+              <ArgoSyncWithOptionsMenuItem object={application} toolbar extension={extension} />
+              <ArgoTerminateMenuItem object={application} toolbar extension={extension} />
             </div>
           ) : null}
+        </div>
+
+        {isLoading ? <div className={styles.loading}>Loading application...</div> : null}
+        {error ? <div className={styles.error}>{error}</div> : null}
+        {!isLoading && !error && application ? (
+          <div className={styles.body}>
+            <ArgoApplicationDetails object={application} extension={extension} onApplicationUpdated={setApplication} />
+          </div>
+        ) : null}
       </div>
     );
   }),

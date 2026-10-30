@@ -3,7 +3,7 @@ import https from "node:https";
 import tls from "node:tls";
 import { HttpProxyAgent, HttpsProxyAgent } from "hpagent";
 import { createArgoCdApiError } from "./errors";
-import { buildArgoCdRequestUrl, normalizeHttpsProxyUrl } from "./url";
+import { buildArgoCdRequestUrl, normalizeCustomCaPem, normalizeHttpsProxyUrl } from "./url";
 
 import type { ArgoCdHttpRequest, ArgoCdHttpResponse } from "./types";
 
@@ -32,19 +32,6 @@ function tryUseSystemCaCertificates(): void {
   } catch {
     // Older Node/Electron runtimes may not expose system CA helpers.
   }
-}
-
-export function normalizeCustomCaPem(raw: string | undefined): string | undefined {
-  const trimmed = raw?.trim();
-  if (!trimmed) {
-    return undefined;
-  }
-  if (!trimmed.includes("BEGIN CERTIFICATE")) {
-    throw new Error(
-      "Custom CA must be PEM text containing -----BEGIN CERTIFICATE----- (export the corporate CA, not the leaf server cert).",
-    );
-  }
-  return trimmed;
 }
 
 function buildTlsAgentOptions(request: ArgoCdHttpRequest): {

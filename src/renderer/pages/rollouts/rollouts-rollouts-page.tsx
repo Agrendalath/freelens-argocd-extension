@@ -1,6 +1,5 @@
 import { Common, Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
-import { Link } from "../../navigation";
 import { withErrorPage } from "../../components/error-page";
 import {
   ArgoRollout,
@@ -12,6 +11,7 @@ import {
   getRolloutStateReason,
   getRolloutStrategyLabel,
 } from "../../k8s/rollouts";
+import { Link } from "../../navigation";
 import styles from "./argo-rollouts-page.module.scss";
 
 const {

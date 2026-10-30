@@ -134,6 +134,7 @@ export class ArgoPreferencesStore extends Common.Store.ExtensionStore<ArgoPrefer
       connectionMode: observable,
       apiConnections: observable,
       activeApiConnectionId: observable,
+      setConnectionMode: action,
       addApiConnection: action,
       removeApiConnection: action,
       selectApiConnection: action,
@@ -152,6 +153,10 @@ export class ArgoPreferencesStore extends Common.Store.ExtensionStore<ArgoPrefer
       this.apiConnections[0] ??
       null
     );
+  }
+
+  setConnectionMode(connectionMode: ArgoCdConnectionMode): void {
+    this.connectionMode = connectionMode;
   }
 
   addApiConnection(seed?: Partial<ArgoCdServerConnection>): ArgoCdServerConnection {

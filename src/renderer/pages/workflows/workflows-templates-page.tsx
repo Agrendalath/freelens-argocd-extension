@@ -1,8 +1,8 @@
 import { Common, Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
-import { Link } from "../../navigation";
 import { withErrorPage } from "../../components/error-page";
 import { ArgoWorkflowTemplate, type ArgoWorkflowTemplateApi, getArgoWorkflowTemplateStore } from "../../k8s/workflows";
+import { Link } from "../../navigation";
 
 const {
   Component: { KubeObjectAge, KubeObjectListLayout, WithTooltip },

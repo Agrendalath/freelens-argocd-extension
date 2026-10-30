@@ -110,10 +110,10 @@ describe("ArgoConfigTabContent", () => {
   it("renders config tabs and loads rows", async () => {
     render(<ArgoConfigTabContent />);
 
-    await waitFor(() => expect(screen.getByRole("button", { name: "Notifications" })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByTestId("KubeObjectListLayoutRow").length).toBeGreaterThan(0));
+    expect(screen.getByRole("button", { name: "Notifications" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Repositories" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Clusters" })).toBeInTheDocument();
-    expect(screen.getAllByTestId("KubeObjectListLayoutRow").length).toBeGreaterThan(0);
   });
 
   it("lists secrets with server-side selectors instead of unfiltered loadAll", async () => {

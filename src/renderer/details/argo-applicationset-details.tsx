@@ -1,9 +1,9 @@
 import { Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
-import { Link } from "../navigation";
 import { withErrorPage } from "../components/error-page";
 import { ConditionsList, ResourceEventsSection, StatusBadge } from "../components/shared";
 import { ArgoApplicationSet, getArgoApplicationStore } from "../k8s/argocd";
+import { Link } from "../navigation";
 
 const {
   Component: { BadgeBoolean, DrawerItem, DrawerTitle, Gutter, Table, TableCell, TableHead, TableRow, WithTooltip },

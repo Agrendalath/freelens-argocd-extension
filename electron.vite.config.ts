@@ -1,8 +1,23 @@
+import { isBuiltin } from "node:module";
 import { resolve } from "node:path";
 import react from "@vitejs/plugin-react";
 import { defineConfig, externalizeDepsPlugin } from "electron-vite";
 import pluginExternal from "vite-plugin-external";
 import sassDts from "vite-plugin-sass-dts";
+
+const noNodeInRenderer = {
+  name: "freelens:no-node-in-renderer",
+  enforce: "pre" as const,
+  resolveId(source: string, importer?: string) {
+    if (isBuiltin(source) || source === "electron" || source.startsWith("electron/")) {
+      throw new Error(
+        `"${source}" is imported by ${importer}, but Freelens v2 renderer code cannot use Node or Electron`,
+      );
+    }
+
+    return null;
+  },
+};
 
 export default defineConfig({
   // main process has full access to Node.js APIs
@@ -43,17 +58,19 @@ export default defineConfig({
       }),
     ],
   },
-  // renderer process in Freelens can use Node.js modules then it is configured
-  // with settings for preload script
-  preload: {
+  // The v2 renderer runs as an ES module in a browser environment.
+  renderer: {
     build: {
       lib: {
         entry: resolve(__dirname, "src/renderer/index.tsx"),
+        fileName: () => "index.js",
         // The v2 host loads renderer extensions as ES modules from a URL.
         formats: ["es"],
+        cssFileName: "index",
       },
       outDir: "out/renderer",
       rollupOptions: {
+        input: resolve(__dirname, "src/renderer/index.tsx"),
         output: {
           // silence warning about using `chunk.default` to access the default export
           exports: "named",
@@ -70,31 +87,15 @@ export default defineConfig({
       },
     },
     plugins: [
+      noNodeInRenderer,
       sassDts({
         enabledMode: ["development", "production"],
       }),
       react({
-        babel: {
-          plugins: [
-            [
-              "@babel/plugin-proposal-decorators",
-              {
-                version: "2023-05",
-              },
-            ],
-          ],
-        },
+        jsxRuntime: "automatic",
       }),
       externalizeDepsPlugin({
-        // do not bundle modules provided by the host app
-        include: [
-          "mobx",
-          "mobx-react",
-          "react",
-          "react-dom",
-        ],
-        // bundle all other modules (incl. hpagent for Argo CD API proxy)
-        exclude: ["hpagent"],
+        include: ["mobx", "mobx-react", "react", "react-dom"],
       }),
       pluginExternal({
         // the modules are provided by the host app as a global variable

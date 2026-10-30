@@ -1,7 +1,6 @@
 import { Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
 import { useEffect, useRef } from "react";
-import { Link } from "../navigation";
 import { withErrorPage } from "../components/error-page";
 import { ConditionsList, ResourceEventsSection, StatusBadge } from "../components/shared";
 import { abortRollout, requestRolloutPromotion, retryRollout } from "../endpoints/argo-rollout-endpoints";
@@ -25,6 +24,7 @@ import {
   getRolloutStrategyLabel,
 } from "../k8s/rollouts";
 import { getAbortRolloutConfirmCopy, runGuardedArgoMutation } from "../mutations";
+import { Link } from "../navigation";
 import { formatOptionalValue } from "../utils";
 
 const {

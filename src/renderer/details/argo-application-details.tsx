@@ -20,7 +20,7 @@ import {
   summarizeApplicationHealth,
 } from "../k8s/argocd/application-diagnostics";
 import { getRollbackApplicationConfirmCopy, runGuardedArgoMutation } from "../mutations";
-import { createEnumFromKeys } from "../utils";
+import { createEnumFromKeys, formatOptionalValue } from "../utils";
 import { ApplicationDiffPanel } from "./application-diff-panel";
 import { ApplicationDriftHotspotsTable } from "./application-drift-hotspots-table";
 import styles from "./argo-application-details.module.scss";
@@ -615,7 +615,7 @@ export const ArgoApplicationDetails = observer((props: ArgoApplicationDetailsPro
                         {safeEntry.initiatedBy?.username ??
                           (safeEntry.initiatedBy?.automated ? "Automated" : "Unknown")}
                       </TableCell>
-                      <TableCell>{safeEntry.source?.repoURL ?? safeEntry.source?.chart ?? "N/A"}</TableCell>
+                      <TableCell>{formatOptionalValue(safeEntry.source?.repoURL ?? safeEntry.source?.chart)}</TableCell>
                       <TableCell>
                         {rollbackDisabledReason ? (
                           <WithTooltip tooltip={rollbackDisabledReason}>

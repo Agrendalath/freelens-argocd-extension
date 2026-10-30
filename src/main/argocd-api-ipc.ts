@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { ipcMain } from "electron";
-import { ARGOCD_API_HTTP_CHANNEL, performArgoCdHttpRequest } from "../common/argocd-api";
+import { ARGOCD_API_HTTP_CHANNEL } from "../common/argocd-api";
+import { performArgoCdHttpRequest } from "../common/argocd-api/http";
 import { ArgoPreferencesStore } from "../common/store";
 
 import type { Main } from "@freelensapp/extensions";

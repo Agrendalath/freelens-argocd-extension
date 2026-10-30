@@ -1,6 +1,5 @@
 import { Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
-import { Link } from "../navigation";
 import { withErrorPage } from "../components/error-page";
 import {
   type ArgoWorkflow,
@@ -10,6 +9,7 @@ import {
   getWorkflowPhase,
   getWorkflowPodReferences,
 } from "../k8s/workflows";
+import { Link } from "../navigation";
 
 const {
   Component: { DrawerItem, DrawerTitle, WithTooltip },

@@ -1,4 +1,5 @@
 import { Renderer } from "@freelensapp/extensions";
+
 import type { JSX } from "react";
 
 export function createKubeObjectDetailRegistration<TProps extends { extension: Renderer.LensExtension }>({
