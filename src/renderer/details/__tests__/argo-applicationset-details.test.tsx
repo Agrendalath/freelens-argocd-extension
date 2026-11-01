@@ -1,5 +1,7 @@
+// @vitest-environment jsdom
+
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { describe, expect, it, vi } from "vitest";
 import { ArgoApplicationSetDetails } from "../argo-applicationset-details";
 
 const extension = { name: "argocd-test-extension" } as any;
@@ -7,7 +9,7 @@ const extension = { name: "argocd-test-extension" } as any;
 const formatUrlForNotListing = ({ namespace, name }: { namespace: string; name: string }) =>
   `/apis/argoproj.io/v1alpha1/namespaces/${namespace}/applications/${name}`;
 
-jest.mock("../../k8s/argocd", () => ({
+vi.mock("../../k8s/argocd", () => ({
   getArgoApplicationStore: () => ({
     api: {
       formatUrlForNotListing,
@@ -18,22 +20,20 @@ jest.mock("../../k8s/argocd", () => ({
 describe("ArgoApplicationSetDetails", () => {
   it("renders generated applications as links", () => {
     render(
-      <MemoryRouter>
-        <ArgoApplicationSetDetails
-          extension={extension}
-          object={
-            {
-              getNs: () => "argocd",
-              spec: {},
-              status: {
-                resources: [{ name: "guestbook" }],
-                applicationStatus: [{ application: "guestbook" }, { application: "payments" }],
-                conditions: [],
-              },
-            } as any
-          }
-        />
-      </MemoryRouter>,
+      <ArgoApplicationSetDetails
+        extension={extension}
+        object={
+          {
+            getNs: () => "argocd",
+            spec: {},
+            status: {
+              resources: [{ name: "guestbook" }],
+              applicationStatus: [{ application: "guestbook" }, { application: "payments" }],
+              conditions: [],
+            },
+          } as any
+        }
+      />,
     );
 
     expect(screen.getByRole("link", { name: "guestbook" })).toHaveAttribute(
@@ -50,22 +50,20 @@ describe("ArgoApplicationSetDetails", () => {
 
   it("uses generated application namespace in links", () => {
     render(
-      <MemoryRouter>
-        <ArgoApplicationSetDetails
-          extension={extension}
-          object={
-            {
-              getNs: () => "argocd",
-              spec: {},
-              status: {
-                resources: [{ name: "guestbook", namespace: "team-a" }],
-                applicationStatus: [{ application: "team-b/payments" }],
-                conditions: [],
-              },
-            } as any
-          }
-        />
-      </MemoryRouter>,
+      <ArgoApplicationSetDetails
+        extension={extension}
+        object={
+          {
+            getNs: () => "argocd",
+            spec: {},
+            status: {
+              resources: [{ name: "guestbook", namespace: "team-a" }],
+              applicationStatus: [{ application: "team-b/payments" }],
+              conditions: [],
+            },
+          } as any
+        }
+      />,
     );
 
     expect(screen.getByRole("link", { name: "guestbook" })).toHaveAttribute(
@@ -80,25 +78,23 @@ describe("ArgoApplicationSetDetails", () => {
 
   it("derives up-to-date from specific condition types and hides error row when false", () => {
     render(
-      <MemoryRouter>
-        <ArgoApplicationSetDetails
-          extension={extension}
-          object={
-            {
-              getNs: () => "argocd",
-              spec: {},
-              status: {
-                resources: [{ name: "guestbook" }],
-                conditions: [
-                  { type: "ErrorOccurred", status: "False" },
-                  { type: "ParametersGenerated", status: "True" },
-                  { type: "ResourcesUpToDate", status: "True" },
-                ],
-              },
-            } as any
-          }
-        />
-      </MemoryRouter>,
+      <ArgoApplicationSetDetails
+        extension={extension}
+        object={
+          {
+            getNs: () => "argocd",
+            spec: {},
+            status: {
+              resources: [{ name: "guestbook" }],
+              conditions: [
+                { type: "ErrorOccurred", status: "False" },
+                { type: "ParametersGenerated", status: "True" },
+                { type: "ResourcesUpToDate", status: "True" },
+              ],
+            },
+          } as any
+        }
+      />,
     );
 
     const badgeValues = screen.getAllByTestId("BadgeBoolean").map((node) => node.textContent);
@@ -108,29 +104,27 @@ describe("ArgoApplicationSetDetails", () => {
 
   it("renders error message when ErrorOccurred is true", () => {
     render(
-      <MemoryRouter>
-        <ArgoApplicationSetDetails
-          extension={extension}
-          object={
-            {
-              getNs: () => "argocd",
-              spec: {},
-              status: {
-                resources: [],
-                conditions: [
-                  {
-                    type: "ErrorOccurred",
-                    status: "True",
-                    reason: "RenderTemplateParamsError",
-                    message: "failed to execute go template for generator item #2",
-                  },
-                  { type: "ResourcesUpToDate", status: "False" },
-                ],
-              },
-            } as any
-          }
-        />
-      </MemoryRouter>,
+      <ArgoApplicationSetDetails
+        extension={extension}
+        object={
+          {
+            getNs: () => "argocd",
+            spec: {},
+            status: {
+              resources: [],
+              conditions: [
+                {
+                  type: "ErrorOccurred",
+                  status: "True",
+                  reason: "RenderTemplateParamsError",
+                  message: "failed to execute go template for generator item #2",
+                },
+                { type: "ResourcesUpToDate", status: "False" },
+              ],
+            },
+          } as any
+        }
+      />,
     );
 
     expect(screen.getByText("Error Occurred")).toBeInTheDocument();
@@ -140,22 +134,20 @@ describe("ArgoApplicationSetDetails", () => {
 
   it("renders detailed conditions table entries", () => {
     render(
-      <MemoryRouter>
-        <ArgoApplicationSetDetails
-          extension={extension}
-          object={
-            {
-              getNs: () => "argocd",
-              spec: {
-                generators: [{ list: {} }],
-              },
-              status: {
-                conditions: [{ type: "ResourcesUpToDate", status: "True", reason: "AllHealthy", message: "ok" }],
-              },
-            } as any
-          }
-        />
-      </MemoryRouter>,
+      <ArgoApplicationSetDetails
+        extension={extension}
+        object={
+          {
+            getNs: () => "argocd",
+            spec: {
+              generators: [{ list: {} }],
+            },
+            status: {
+              conditions: [{ type: "ResourcesUpToDate", status: "True", reason: "AllHealthy", message: "ok" }],
+            },
+          } as any
+        }
+      />,
     );
 
     expect(screen.getByText("Generator Types")).toBeInTheDocument();

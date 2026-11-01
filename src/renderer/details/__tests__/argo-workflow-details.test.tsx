@@ -1,5 +1,7 @@
+// @vitest-environment jsdom
+
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { describe, expect, it } from "vitest";
 import { ArgoWorkflowDetails } from "../argo-workflow-details";
 
 const extension = { name: "argocd-test-extension" } as any;
@@ -17,11 +19,7 @@ describe("ArgoWorkflowDetails", () => {
       spec: { suspend: true },
     } as any;
 
-    render(
-      <MemoryRouter>
-        <ArgoWorkflowDetails object={object} extension={extension} />
-      </MemoryRouter>,
-    );
+    render(<ArgoWorkflowDetails object={object} extension={extension} />);
 
     expect(screen.getAllByText("Suspended")).toHaveLength(2);
     expect(screen.getByText("1/1")).toBeInTheDocument();
@@ -50,11 +48,7 @@ describe("ArgoWorkflowDetails", () => {
       spec: { suspend: false },
     } as any;
 
-    render(
-      <MemoryRouter>
-        <ArgoWorkflowDetails object={object} extension={extension} />
-      </MemoryRouter>,
-    );
+    render(<ArgoWorkflowDetails object={object} extension={extension} />);
 
     expect(screen.queryByRole("button", { name: "Suspend" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Resume" })).not.toBeInTheDocument();

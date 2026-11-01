@@ -1,5 +1,7 @@
+// @vitest-environment jsdom
+
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { describe, expect, it, vi } from "vitest";
 import {
   ArgoWorkflowsClusterTemplatesTabContent,
   ArgoWorkflowsCronWorkflowsTabContent,
@@ -72,7 +74,7 @@ const clusterWorkflowTemplateStore = {
   },
 };
 
-jest.mock("../../k8s/workflows", () => ({
+vi.mock("../../k8s/workflows", () => ({
   ArgoWorkflow: {
     crd: { plural: "workflows", title: "Workflows" },
   },
@@ -101,11 +103,7 @@ jest.mock("../../k8s/workflows", () => ({
 
 describe("Argo Workflows list pages", () => {
   it("links workflow name to workflow details", () => {
-    render(
-      <MemoryRouter>
-        <ArgoWorkflowsTabContent />
-      </MemoryRouter>,
-    );
+    render(<ArgoWorkflowsTabContent />);
 
     expect(screen.getByRole("link", { name: "wf-demo" })).toHaveAttribute(
       "href",
@@ -114,11 +112,7 @@ describe("Argo Workflows list pages", () => {
   });
 
   it("links cron workflow name to cron workflow details", () => {
-    render(
-      <MemoryRouter>
-        <ArgoWorkflowsCronWorkflowsTabContent />
-      </MemoryRouter>,
-    );
+    render(<ArgoWorkflowsCronWorkflowsTabContent />);
 
     expect(screen.getByRole("link", { name: "cron-demo" })).toHaveAttribute(
       "href",
@@ -127,11 +121,7 @@ describe("Argo Workflows list pages", () => {
   });
 
   it("links workflow template name to template details", () => {
-    render(
-      <MemoryRouter>
-        <ArgoWorkflowsTemplatesTabContent />
-      </MemoryRouter>,
-    );
+    render(<ArgoWorkflowsTemplatesTabContent />);
 
     expect(screen.getByRole("link", { name: "tmpl-demo" })).toHaveAttribute(
       "href",
@@ -140,11 +130,7 @@ describe("Argo Workflows list pages", () => {
   });
 
   it("links cluster workflow template name to cluster template details", () => {
-    render(
-      <MemoryRouter>
-        <ArgoWorkflowsClusterTemplatesTabContent />
-      </MemoryRouter>,
-    );
+    render(<ArgoWorkflowsClusterTemplatesTabContent />);
 
     expect(screen.getByRole("link", { name: "cluster-tmpl-demo" })).toHaveAttribute(
       "href",

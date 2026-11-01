@@ -1,11 +1,11 @@
-import { createHash } from "node:crypto";
-import { ipcMain } from "electron";
-import { ARGOCD_API_HTTP_CHANNEL, performArgoCdHttpRequest } from "../common/argocd-api";
+import { Main } from "@freelensapp/extensions";
+import { ARGOCD_API_HTTP_CHANNEL } from "../common/argocd-api";
 import { ArgoPreferencesStore } from "../common/store";
-
-import type { Main } from "@freelensapp/extensions";
+import { performArgoCdHttpRequest } from "./argocd-api-http";
 
 import type { ArgoCdHttpMethod, ArgoCdHttpResponse, ArgoCdIpcRequest } from "../common/argocd-api";
+
+class ArgoCdApiIpc extends Main.Ipc {}
 
 function isAllowedArgoCdApiPath(path: string): boolean {
   // Allow only Argo CD API endpoints. This prevents renderer from turning the main process
@@ -22,12 +22,6 @@ function isAllowedArgoCdApiPath(path: string): boolean {
 
 function isAllowedArgoCdHttpMethod(method: unknown): method is ArgoCdHttpMethod {
   return method === "GET" || method === "POST" || method === "PUT" || method === "DELETE";
-}
-
-/** Same channel prefixing Freelens `Main.Ipc` / `Renderer.Ipc` use. */
-function toExtensionIpcChannel(extensionId: string, channel: string): string {
-  const prefix = createHash("sha256").update(extensionId).digest("hex");
-  return `extensions@${prefix}:${channel}`;
 }
 
 export async function handleArgoCdApiHttpRequest(
@@ -71,32 +65,13 @@ export async function handleArgoCdApiHttpRequest(
   });
 }
 
-let registeredChannel: string | undefined;
-
 /**
- * Register the Argo CD HTTP IPC handler on Electron's ipcMain.
+ * Register the Argo CD HTTP IPC handler through Freelens `Main.Ipc`.
  *
- * Freelens `Main.Ipc` is a Singleton (`createInstance`); relying on it alone has proven
- * brittle across extension reloads. We mirror Freelens channel naming so renderer
- * `Renderer.Ipc.invoke("argocd-api-http", …)` keeps working.
+ * The host prefixes the channel with one derived from the extension's id and
+ * removes the handler when the extension is disabled or reloaded, so there is
+ * nothing to unregister in `onDeactivate`.
  */
 export function registerArgoCdApiIpc(extension: Main.LensExtension): void {
-  const channel = toExtensionIpcChannel(extension.id, ARGOCD_API_HTTP_CHANNEL);
-
-  if (registeredChannel && registeredChannel !== channel) {
-    ipcMain.removeHandler(registeredChannel);
-  }
-
-  // Idempotent: safe if no handler exists yet; required after extension reload.
-  ipcMain.removeHandler(channel);
-  ipcMain.handle(channel, handleArgoCdApiHttpRequest);
-  registeredChannel = channel;
-}
-
-export function unregisterArgoCdApiIpc(): void {
-  if (!registeredChannel) {
-    return;
-  }
-  ipcMain.removeHandler(registeredChannel);
-  registeredChannel = undefined;
+  ArgoCdApiIpc.createInstance(extension).handle(ARGOCD_API_HTTP_CHANNEL, handleArgoCdApiHttpRequest);
 }

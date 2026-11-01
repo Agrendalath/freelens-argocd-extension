@@ -1,7 +1,6 @@
 export { createArgoCdApiError, parseArgoCdErrorBody } from "./errors";
-export { normalizeCustomCaPem, performArgoCdHttpJson, performArgoCdHttpRequest } from "./http";
 export { ARGOCD_API_HTTP_CHANNEL } from "./types";
-export { buildArgoCdRequestUrl, normalizeArgoCdServerUrl, normalizeHttpsProxyUrl } from "./url";
+export { buildArgoCdRequestUrl, normalizeArgoCdServerUrl, normalizeCustomCaPem, normalizeHttpsProxyUrl } from "./url";
 
 export type {
   ArgoCdApiConnection,

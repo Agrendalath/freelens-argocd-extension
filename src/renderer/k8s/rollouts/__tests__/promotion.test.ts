@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { ANALYSIS_PHASE_INCONCLUSIVE, getCurrentCanaryStep, isInconclusiveCanaryAnalysis } from "../canary-step";
 
 function mockRollout(partial: Record<string, unknown> = {}) {

@@ -4,5 +4,6 @@ declare const classNames: {
   readonly lead: "lead";
   readonly list: "list";
   readonly hint: "hint";
+  readonly link: "link";
 };
 export = classNames;

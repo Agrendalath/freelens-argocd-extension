@@ -1,6 +1,5 @@
 import { Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
-import { withErrorPage } from "../components/error-page";
 import { type ArgoClusterAnalysisTemplate } from "../k8s/rollouts";
 import { ArgoAnalysisTemplateDetailContent } from "./argo-analysis-template-detail-content";
 
@@ -9,14 +8,12 @@ export interface ArgoClusterAnalysisTemplateDetailsProps
   extension: Renderer.LensExtension;
 }
 
-export const ArgoClusterAnalysisTemplateDetails = observer((props: ArgoClusterAnalysisTemplateDetailsProps) =>
-  withErrorPage(props, () => {
-    const { object } = props;
+export const ArgoClusterAnalysisTemplateDetails = observer((props: ArgoClusterAnalysisTemplateDetailsProps) => {
+  const { object } = props;
 
-    return (
-      <>
-        <ArgoAnalysisTemplateDetailContent title="ClusterAnalysisTemplate" spec={object.spec} />
-      </>
-    );
-  }),
-);
+  return (
+    <>
+      <ArgoAnalysisTemplateDetailContent title="ClusterAnalysisTemplate" spec={object.spec} />
+    </>
+  );
+});

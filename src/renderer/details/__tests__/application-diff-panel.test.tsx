@@ -1,4 +1,7 @@
+// @vitest-environment jsdom
+
 import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   buildApplicationResourceKey,
   getApplicationResourceRowElementId,
@@ -6,7 +9,7 @@ import {
 import { ApplicationDiffPanel } from "../application-diff-panel";
 
 describe("ApplicationDiffPanel", () => {
-  const scrollIntoViewMock = jest.fn();
+  const scrollIntoViewMock = vi.fn();
 
   beforeEach(() => {
     scrollIntoViewMock.mockReset();

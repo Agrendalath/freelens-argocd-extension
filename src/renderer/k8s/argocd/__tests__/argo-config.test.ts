@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import {
   ARGOCD_NOTIFICATIONS_CONFIGMAP_NAME,
   ARGOCD_NOTIFICATIONS_SECRET_NAME,
@@ -68,7 +69,7 @@ describe("argo-config helpers", () => {
         url: "https://example.com",
       },
       data: {
-        url: Buffer.from("https://wrong.com", "utf8").toString("base64"),
+        url: btoa("https://wrong.com"),
       },
     });
 
@@ -78,7 +79,7 @@ describe("argo-config helpers", () => {
   it("decodes base64 data when stringData is missing", () => {
     const secret = makeObject({
       data: {
-        url: Buffer.from("https://example.com", "utf8").toString("base64"),
+        url: btoa("https://example.com"),
       },
     });
 
@@ -194,10 +195,10 @@ describe("argo-config helpers", () => {
   it("flags the Helm 4 conflict when insecure and insecureOCIForceHttp are both set", () => {
     const conflictingRepo = makeObject({
       data: {
-        type: Buffer.from("helm", "utf8").toString("base64"),
-        url: Buffer.from("http://registry.internal:5000", "utf8").toString("base64"),
-        insecure: Buffer.from("true", "utf8").toString("base64"),
-        insecureOCIForceHttp: Buffer.from("true", "utf8").toString("base64"),
+        type: btoa("helm"),
+        url: btoa("http://registry.internal:5000"),
+        insecure: btoa("true"),
+        insecureOCIForceHttp: btoa("true"),
       },
     });
 
@@ -248,7 +249,7 @@ describe("argo-config helpers", () => {
   it("detects repo auth from data keys without decoding base64 material", () => {
     const secret = makeObject({
       data: {
-        sshPrivateKey: Buffer.from("not-actually-read", "utf8").toString("base64"),
+        sshPrivateKey: btoa("not-actually-read"),
       },
     });
 

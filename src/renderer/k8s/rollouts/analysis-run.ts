@@ -51,6 +51,9 @@ export class ArgoAnalysisRun extends Renderer.K8sApi.LensExtensionKubeObject<
   AnalysisRunStatus,
   AnalysisRunSpec
 > {
+  declare kind: "AnalysisRun";
+  declare apiVersion: "argoproj.io/v1alpha1";
+
   static readonly kind = "AnalysisRun";
   static readonly namespaced = true;
   static readonly apiBase = "/apis/argoproj.io/v1alpha1/analysisruns";

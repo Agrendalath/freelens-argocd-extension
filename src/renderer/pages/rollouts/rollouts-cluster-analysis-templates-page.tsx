@@ -1,17 +1,14 @@
 import { Common, Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
-import { Link } from "react-router-dom";
-import { withErrorPage } from "../../components/error-page";
 import {
   ArgoClusterAnalysisTemplate,
   type ArgoClusterAnalysisTemplateApi,
   getArgoClusterAnalysisTemplateStore,
 } from "../../k8s/rollouts";
 import styles from "./argo-rollouts-page.module.scss";
-import stylesInline from "./argo-rollouts-page.module.scss?inline";
 
 const {
-  Component: { KubeObjectAge, KubeObjectListLayout, WithTooltip },
+  Component: { KubeObjectAge, KubeObjectListLayout, MaybeLink, WithTooltip },
   Navigation: { getDetailsUrl },
 } = Renderer;
 
@@ -48,33 +45,29 @@ export const ArgoRolloutsClusterAnalysisTemplatesTabContent = observer(() => {
     );
 
   return (
-    <>
-      <style>{stylesInline}</style>
-      <KubeObjectListLayout<ArgoClusterAnalysisTemplate, ArgoClusterAnalysisTemplateApi>
-        tableId={`${ArgoClusterAnalysisTemplate.crd.plural}Table`}
-        isConfigurable
-        className={styles.page}
-        store={clusterAnalysisTemplateStore}
-        sortingCallbacks={sortingCallbacks}
-        searchFilters={[(object: ArgoClusterAnalysisTemplate) => object.getSearchFields()]}
-        renderHeaderTitle={ArgoClusterAnalysisTemplate.crd.title}
-        renderTableHeader={renderTableHeader}
-        renderTableContents={(object: ArgoClusterAnalysisTemplate) => [
-          <Link key="name-link" to={getDetailsRoute(object)} onClick={stopPropagation}>
-            <WithTooltip>{object.getName()}</WithTooltip>
-          </Link>,
-          <WithTooltip>{String(object.spec?.metrics?.length ?? 0)}</WithTooltip>,
-          <WithTooltip>{String(object.spec?.args?.length ?? 0)}</WithTooltip>,
-          <KubeObjectAge object={object} key="age" />,
-        ]}
-      />
-    </>
+    <KubeObjectListLayout<ArgoClusterAnalysisTemplate, ArgoClusterAnalysisTemplateApi>
+      tableId={`${ArgoClusterAnalysisTemplate.crd.plural}Table`}
+      isConfigurable
+      className={styles.page}
+      store={clusterAnalysisTemplateStore}
+      sortingCallbacks={sortingCallbacks}
+      searchFilters={[(object: ArgoClusterAnalysisTemplate) => object.getSearchFields()]}
+      renderHeaderTitle={ArgoClusterAnalysisTemplate.crd.title}
+      renderTableHeader={renderTableHeader}
+      renderTableContents={(object: ArgoClusterAnalysisTemplate) => [
+        <MaybeLink key="name-link" to={getDetailsRoute(object)} onClick={stopPropagation}>
+          <WithTooltip>{object.getName()}</WithTooltip>
+        </MaybeLink>,
+        <WithTooltip>{String(object.spec?.metrics?.length ?? 0)}</WithTooltip>,
+        <WithTooltip>{String(object.spec?.args?.length ?? 0)}</WithTooltip>,
+        <KubeObjectAge object={object} key="age" />,
+      ]}
+    />
   );
 });
 
 export const ArgoRolloutsClusterAnalysisTemplatesPage = observer(
-  (props: ArgoRolloutsClusterAnalysisTemplatesPageProps) =>
-    withErrorPage(props, () => {
-      return <ArgoRolloutsClusterAnalysisTemplatesTabContent />;
-    }),
+  (props: ArgoRolloutsClusterAnalysisTemplatesPageProps) => {
+    return <ArgoRolloutsClusterAnalysisTemplatesTabContent />;
+  },
 );

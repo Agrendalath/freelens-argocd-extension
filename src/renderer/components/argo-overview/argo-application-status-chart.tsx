@@ -3,7 +3,6 @@ import { observer } from "mobx-react";
 import { useEffect, useRef, useState } from "react";
 import { ArgoApplication } from "../../k8s/argocd";
 import styles from "./argo-application-status-chart.module.scss";
-import stylesInline from "./argo-application-status-chart.module.scss?inline";
 
 const {
   Component: { PieChart },
@@ -91,28 +90,22 @@ export const ArgoApplicationStatusChart = observer(
 
     if (applications.length === 0 || Object.keys(filteredStatusCounts).length === 0) {
       return (
-        <>
-          <style>{stylesInline}</style>
-          <div className={`${styles.chartContainer} ${className || ""}`}>
-            <h6 className={styles.title}>Application Health Status</h6>
-            <div className={styles.noData}>
-              <div>{isLoading ? "Loading ArgoCD applications..." : "No applications"}</div>
-            </div>
+        <div className={`${styles.chartContainer} ${className || ""}`}>
+          <h6 className={styles.title}>Application Health Status</h6>
+          <div className={styles.noData}>
+            <div>{isLoading ? "Loading ArgoCD applications..." : "No applications"}</div>
           </div>
-        </>
+        </div>
       );
     }
 
     return (
-      <>
-        <style>{stylesInline}</style>
-        <div ref={containerRef} className={`ArgoApplicationStatusChart ${styles.chartContainer} ${className || ""}`}>
-          <h6 className={styles.title}>Application Health Status</h6>
-          <div className={styles.chart}>
-            <PieChart data={chartData} options={chartOptions} height={300} showLegend={true} legendPosition="bottom" />
-          </div>
+      <div ref={containerRef} className={`ArgoApplicationStatusChart ${styles.chartContainer} ${className || ""}`}>
+        <h6 className={styles.title}>Application Health Status</h6>
+        <div className={styles.chart}>
+          <PieChart data={chartData} options={chartOptions} height={300} showLegend={true} legendPosition="bottom" />
         </div>
-      </>
+      </div>
     );
   },
 );

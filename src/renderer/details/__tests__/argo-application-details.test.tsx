@@ -1,6 +1,9 @@
+// @vitest-environment jsdom
+
 import { Renderer } from "@freelensapp/extensions";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApplicationRollbackMergePatch } from "../../endpoints/argo-application-endpoints";
 import {
   buildApplicationResourceKey,
@@ -8,10 +11,12 @@ import {
 } from "../../k8s/argocd/application-diagnostics";
 import { ArgoApplicationDetails } from "../argo-application-details";
 
-const patchMock = jest.fn();
+import type { Mock } from "vitest";
 
-jest.mock("../../k8s/argocd", () => {
-  const actual = jest.requireActual("../../k8s/argocd");
+const patchMock = vi.fn();
+
+vi.mock("../../k8s/argocd", async () => {
+  const actual = await vi.importActual<typeof import("../../k8s/argocd")>("../../k8s/argocd");
   return {
     ...actual,
     getArgoApplicationStore: () => ({
@@ -53,13 +58,13 @@ function createRollbackApp(overrides: Record<string, unknown> = {}) {
 }
 
 describe("ArgoApplicationDetails", () => {
-  const scrollIntoViewMock = jest.fn();
+  const scrollIntoViewMock = vi.fn();
 
   beforeEach(() => {
     patchMock.mockReset();
-    (Renderer.Component.ConfirmDialog.confirm as jest.Mock).mockReset();
-    (Renderer.Component.Notifications.ok as jest.Mock).mockReset();
-    (Renderer.Component.Notifications.error as jest.Mock).mockReset();
+    (Renderer.Component.ConfirmDialog.confirm as Mock).mockReset();
+    (Renderer.Component.Notifications.ok as Mock).mockReset();
+    (Renderer.Component.Notifications.error as Mock).mockReset();
     scrollIntoViewMock.mockReset();
     Element.prototype.scrollIntoView = scrollIntoViewMock;
   });
@@ -657,7 +662,7 @@ describe("ArgoApplicationDetails", () => {
 
     it("confirms and patches rollback when clicked", async () => {
       patchMock.mockResolvedValueOnce(undefined);
-      (Renderer.Component.ConfirmDialog.confirm as jest.Mock).mockResolvedValueOnce(true);
+      (Renderer.Component.ConfirmDialog.confirm as Mock).mockResolvedValueOnce(true);
       const user = userEvent.setup();
       const app = createRollbackApp();
       const historyEntry = app.status.history[0]!;
@@ -677,7 +682,7 @@ describe("ArgoApplicationDetails", () => {
     });
 
     it("does not patch when rollback confirmation is cancelled", async () => {
-      (Renderer.Component.ConfirmDialog.confirm as jest.Mock).mockResolvedValueOnce(false);
+      (Renderer.Component.ConfirmDialog.confirm as Mock).mockResolvedValueOnce(false);
       const user = userEvent.setup();
 
       renderDetails(createRollbackApp());
@@ -690,7 +695,7 @@ describe("ArgoApplicationDetails", () => {
 
     it("shows error notification when rollback patch fails", async () => {
       patchMock.mockRejectedValueOnce(new Error("rollback denied"));
-      (Renderer.Component.ConfirmDialog.confirm as jest.Mock).mockResolvedValueOnce(true);
+      (Renderer.Component.ConfirmDialog.confirm as Mock).mockResolvedValueOnce(true);
       const user = userEvent.setup();
 
       renderDetails(createRollbackApp());

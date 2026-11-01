@@ -1,3 +1,4 @@
+import { describe, expect, it, vi } from "vitest";
 import {
   ARGOCD_CONFIGMAP_LABEL_SELECTOR,
   ARGOCD_NOTIFICATIONS_SECRET_FIELD_SELECTOR,
@@ -27,7 +28,7 @@ describe("argo-config-resource-loader", () => {
   });
 
   it("loadArgoConfigSecrets requests typed and notifications lists per namespace", async () => {
-    const list = jest.fn(async ({ namespace }: { namespace: string }, query?: Record<string, string>) => {
+    const list = vi.fn(async ({ namespace }: { namespace: string }, query?: Record<string, string>) => {
       if (namespace === "one" && query?.labelSelector === ARGOCD_TYPED_SECRET_LABEL_SELECTOR) {
         return [{ getNs: () => "one", getName: () => "r1", getId: () => "uid-r1" }];
       }
@@ -58,7 +59,7 @@ describe("argo-config-resource-loader", () => {
   });
 
   it("loadArgoConfigMaps requests part-of label per namespace", async () => {
-    const list = jest.fn(async ({ namespace }: { namespace: string }, query?: Record<string, string>) => {
+    const list = vi.fn(async ({ namespace }: { namespace: string }, query?: Record<string, string>) => {
       expect(query?.labelSelector).toBe(ARGOCD_CONFIGMAP_LABEL_SELECTOR);
       return [{ getNs: () => namespace, getName: () => `cm-${namespace}`, getId: () => `id-${namespace}` }];
     });
@@ -71,7 +72,7 @@ describe("argo-config-resource-loader", () => {
 
   it("dedupes duplicate objects returned from overlapping queries", async () => {
     const same = { getNs: () => "ns", getName: () => "dup", getId: () => "same-uid" };
-    const list = jest.fn(async (_opts: { namespace: string }, query?: Record<string, string>) => {
+    const list = vi.fn(async (_opts: { namespace: string }, query?: Record<string, string>) => {
       if (query?.labelSelector) {
         return [same];
       }

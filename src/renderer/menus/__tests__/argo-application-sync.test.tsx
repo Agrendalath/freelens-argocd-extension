@@ -1,11 +1,16 @@
+// @vitest-environment jsdom
+
 import { Renderer } from "@freelensapp/extensions";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ArgoSyncMenuItem } from "../argo-application-sync";
 
-const patchMock = jest.fn();
+import type { Mock } from "vitest";
 
-jest.mock("../../k8s/argocd", () => ({
+const patchMock = vi.fn();
+
+vi.mock("../../k8s/argocd", () => ({
   getArgoApplicationStore: () => ({
     patch: patchMock,
   }),
@@ -16,8 +21,8 @@ const extension = { name: "argocd-test-extension" } as any;
 describe("ArgoSyncMenuItem", () => {
   beforeEach(() => {
     patchMock.mockReset();
-    (Renderer.Component.Notifications.ok as jest.Mock).mockReset();
-    (Renderer.Component.Notifications.error as jest.Mock).mockReset();
+    (Renderer.Component.Notifications.ok as Mock).mockReset();
+    (Renderer.Component.Notifications.error as Mock).mockReset();
   });
 
   it("renders sync action for application", () => {

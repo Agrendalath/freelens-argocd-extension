@@ -1,4 +1,7 @@
+// @vitest-environment jsdom
+
 import { render, screen, within } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 import { ConditionsList } from "../conditions-list";
 
 describe("ConditionsList", () => {

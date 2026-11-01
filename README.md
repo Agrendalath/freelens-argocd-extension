@@ -58,7 +58,7 @@ Known limitations:
 
 ## Requirements
 
-- Freelens `^1.9.0`
+- Freelens `^2.0.0`
 - Kubernetes >= 1.32
 - The cluster must have the Argo APIs you want to manage installed (Argo CD for Applications; Rollouts and Workflows only if those controllers are present).
 - Argo CD `3.4` and `3.5` are the versions this extension is validated against (see [dev-cluster](dev-cluster/README.md), pinned to chart `10.3.0` / app `v3.5.0`). Argo CD 3.5's Helm 4 OCI flags (`enableOCI`, `insecureOCIForceHttp`) are supported in the Config page's repository secret details, including a warning when `insecure` and `insecureOCIForceHttp` conflict. Other versions likely work but aren't actively tested.
@@ -125,6 +125,16 @@ pnpm pack
 
 The tarball is generated in the project root. In Freelens, open Extensions and provide the tarball path, or drag and drop the `.tgz` into the Freelens window.
 
+### Development loop
+
+In Freelens v2, install the checkout directory itself from the Extensions page — there is no packing or symlink step. Then run both entry-point builds in watch mode:
+
+```sh
+pnpm dev
+```
+
+Freelens watches `dist/main.js` and `dist/renderer.js` and reloads the extension when they are rewritten. A rebuild of a CommonJS `main` would not reload — this extension ships ESM, so the loop works.
+
 For checks, tests, and PR expectations see [CONTRIBUTING.md](CONTRIBUTING.md). A local Kind-based demo cluster with Argo CD, Rollouts, and Workflows preinstalled is available under [dev-cluster](dev-cluster/README.md).
 
 ### Integration tests
@@ -132,7 +142,7 @@ For checks, tests, and PR expectations see [CONTRIBUTING.md](CONTRIBUTING.md). A
 `pnpm test:integration` runs a smoke test that installs the extension into a real Freelens build and checks that the ArgoCD Overview page renders. It requires two environment variables:
 
 - One of `FREELENS_EXECUTABLE_PATH`, `FREELENS_PATH`, or `FREELENS_BINARY` — path to a Freelens executable.
-- `EXTENSION_PATH` — path to the built extension (e.g. the `.tgz` from `pnpm pack`, or the `out/` directory).
+- `EXTENSION_PATH` — path to the built extension (e.g. the `.tgz` from `pnpm pack`, or the `dist/` directory).
 
 If either is missing, the test is skipped silently (`it.skip`) rather than failing — this is expected when running locally without a Freelens build available. CI does not currently run integration tests; they're a local/manual verification step only.
 

@@ -1,8 +1,10 @@
 allowBuilds:
-  '@parcel/watcher': true
   electron: true
   esbuild: true
-  node-pty: true
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - esbuild
+
+engineStrict: true
+
+# Fail the install, instead of printing one warning line, when a library the
+# extension shares with the host is outside the peer range of
+# @freelensapp/extensions.
+strictPeerDependencies: true

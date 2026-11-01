@@ -1,7 +1,5 @@
 import { Common, Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
-import { Link } from "react-router-dom";
-import { withErrorPage } from "../../components/error-page";
 import {
   ArgoClusterWorkflowTemplate,
   type ArgoClusterWorkflowTemplateApi,
@@ -9,7 +7,7 @@ import {
 } from "../../k8s/workflows";
 
 const {
-  Component: { KubeObjectAge, KubeObjectListLayout, WithTooltip },
+  Component: { KubeObjectAge, KubeObjectListLayout, MaybeLink, WithTooltip },
   Navigation: { getDetailsUrl },
 } = Renderer;
 
@@ -52,9 +50,9 @@ export const ArgoWorkflowsClusterTemplatesTabContent = observer(() => {
       renderHeaderTitle={ArgoClusterWorkflowTemplate.crd.title}
       renderTableHeader={renderTableHeader}
       renderTableContents={(object: ArgoClusterWorkflowTemplate) => [
-        <Link key="name-link" to={getClusterWorkflowTemplateDetailsUrl(object)} onClick={stopPropagation}>
+        <MaybeLink key="name-link" to={getClusterWorkflowTemplateDetailsUrl(object)} onClick={stopPropagation}>
           <WithTooltip>{object.getName()}</WithTooltip>
-        </Link>,
+        </MaybeLink>,
         <WithTooltip>{object.spec?.entrypoint ?? "N/A"}</WithTooltip>,
         <WithTooltip>{object.spec?.serviceAccountName ?? "N/A"}</WithTooltip>,
         <KubeObjectAge object={object} key="age" />,
@@ -67,6 +65,6 @@ export interface ArgoWorkflowsClusterTemplatesPageProps {
   extension: Renderer.LensExtension;
 }
 
-export const ArgoWorkflowsClusterTemplatesPage = observer((props: ArgoWorkflowsClusterTemplatesPageProps) =>
-  withErrorPage(props, () => <ArgoWorkflowsClusterTemplatesTabContent />),
-);
+export const ArgoWorkflowsClusterTemplatesPage = observer((props: ArgoWorkflowsClusterTemplatesPageProps) => {
+  return <ArgoWorkflowsClusterTemplatesTabContent />;
+});

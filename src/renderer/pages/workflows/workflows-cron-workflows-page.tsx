@@ -1,7 +1,5 @@
 import { Common, Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
-import { Link } from "react-router-dom";
-import { withErrorPage } from "../../components/error-page";
 import {
   ArgoCronWorkflow,
   type ArgoCronWorkflowApi,
@@ -13,7 +11,7 @@ import {
 } from "../../k8s/workflows";
 
 const {
-  Component: { KubeObjectAge, KubeObjectListLayout, WithTooltip },
+  Component: { KubeObjectAge, KubeObjectListLayout, MaybeLink, WithTooltip },
   K8sApi: { namespacesApi },
   Navigation: { getDetailsUrl },
 } = Renderer;
@@ -66,16 +64,16 @@ export const ArgoWorkflowsCronWorkflowsTabContent = observer(() => {
       renderHeaderTitle={ArgoCronWorkflow.crd.title}
       renderTableHeader={renderTableHeader}
       renderTableContents={(object: ArgoCronWorkflow) => [
-        <Link key="name-link" to={getCronWorkflowDetailsUrl(object)} onClick={stopPropagation}>
+        <MaybeLink key="name-link" to={getCronWorkflowDetailsUrl(object)} onClick={stopPropagation}>
           <WithTooltip>{object.getName()}</WithTooltip>
-        </Link>,
-        <Link
+        </MaybeLink>,
+        <MaybeLink
           key="namespace-link"
           to={getDetailsUrl(namespacesApi.formatUrlForNotListing({ name: object.getNs() }))}
           onClick={stopPropagation}
         >
           <WithTooltip>{object.getNs()}</WithTooltip>
-        </Link>,
+        </MaybeLink>,
         <WithTooltip>{getCronWorkflowSchedules(object)}</WithTooltip>,
         <WithTooltip>{object.spec?.timezone ?? "N/A"}</WithTooltip>,
         <WithTooltip>{getCronWorkflowSuspendLabel(object)}</WithTooltip>,
@@ -91,6 +89,6 @@ export interface ArgoWorkflowsCronWorkflowsPageProps {
   extension: Renderer.LensExtension;
 }
 
-export const ArgoWorkflowsCronWorkflowsPage = observer((props: ArgoWorkflowsCronWorkflowsPageProps) =>
-  withErrorPage(props, () => <ArgoWorkflowsCronWorkflowsTabContent />),
-);
+export const ArgoWorkflowsCronWorkflowsPage = observer((props: ArgoWorkflowsCronWorkflowsPageProps) => {
+  return <ArgoWorkflowsCronWorkflowsTabContent />;
+});

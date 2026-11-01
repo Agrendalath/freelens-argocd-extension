@@ -1,33 +1,38 @@
+// @vitest-environment jsdom
+
 import { Renderer } from "@freelensapp/extensions";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import * as rolloutsMock from "../../k8s/rollouts";
 import { ArgoRolloutDetails } from "../argo-rollout-details";
+
+import type { Mock } from "vitest";
 
 const extension = { name: "argocd-test-extension" } as any;
 
-jest.mock("../../k8s/rollouts", () => {
-  const actual = jest.requireActual("../../k8s/rollouts");
-  const requestPatchMock = jest.fn().mockResolvedValue({});
-  const patchMock = jest.fn().mockResolvedValue(undefined);
+vi.mock("../../k8s/rollouts", async () => {
+  const actual = await vi.importActual<typeof import("../../k8s/rollouts")>("../../k8s/rollouts");
+  const requestPatchMock = vi.fn().mockResolvedValue({});
+  const patchMock = vi.fn().mockResolvedValue(undefined);
   const mockStore = {
     patch: patchMock,
     api: {
-      formatUrlForNotListing: jest.fn(() => "/apis/argoproj.io/v1alpha1/namespaces/default/rollouts/demo-rollout"),
+      formatUrlForNotListing: vi.fn(() => "/apis/argoproj.io/v1alpha1/namespaces/default/rollouts/demo-rollout"),
       request: { patch: requestPatchMock },
     },
   };
   return {
     ...actual,
-    getArgoRolloutStore: jest.fn(() => mockStore),
+    getArgoRolloutStore: vi.fn(() => mockStore),
     __TEST_PROMOTE_PATCH__: { requestPatchMock, patchMock },
   };
 });
 
 const getPromoteMocks = () =>
-  (jest.requireMock("../../k8s/rollouts") as any).__TEST_PROMOTE_PATCH__ as {
-    requestPatchMock: jest.Mock;
-    patchMock: jest.Mock;
+  (rolloutsMock as any).__TEST_PROMOTE_PATCH__ as {
+    requestPatchMock: Mock;
+    patchMock: Mock;
   };
 
 describe("ArgoRolloutDetails", () => {
@@ -36,35 +41,33 @@ describe("ArgoRolloutDetails", () => {
     patchMock.mockClear();
     requestPatchMock.mockClear();
     requestPatchMock.mockResolvedValue({});
-    (Renderer.Component.ConfirmDialog.confirm as jest.Mock).mockReset();
-    (Renderer.Component.Notifications.ok as jest.Mock).mockReset();
-    (Renderer.Component.Notifications.error as jest.Mock).mockReset();
+    (Renderer.Component.ConfirmDialog.confirm as Mock).mockReset();
+    (Renderer.Component.Notifications.ok as Mock).mockReset();
+    (Renderer.Component.Notifications.error as Mock).mockReset();
   });
 
   it("renders strategy and replica summary", () => {
     render(
-      <MemoryRouter>
-        <ArgoRolloutDetails
-          extension={extension}
-          object={
-            {
-              spec: {
-                replicas: 5,
-                strategy: { blueGreen: { activeService: "svc-active", previewService: "svc-preview" } },
-              },
-              status: {
-                replicas: 5,
-                updatedReplicas: 5,
-                readyReplicas: 4,
-                availableReplicas: 4,
-                phase: "Paused",
-                currentPodHash: "abcd1234",
-                stableRS: "rs-stable",
-              },
-            } as any
-          }
-        />
-      </MemoryRouter>,
+      <ArgoRolloutDetails
+        extension={extension}
+        object={
+          {
+            spec: {
+              replicas: 5,
+              strategy: { blueGreen: { activeService: "svc-active", previewService: "svc-preview" } },
+            },
+            status: {
+              replicas: 5,
+              updatedReplicas: 5,
+              readyReplicas: 4,
+              availableReplicas: 4,
+              phase: "Paused",
+              currentPodHash: "abcd1234",
+              stableRS: "rs-stable",
+            },
+          } as any
+        }
+      />,
     );
 
     expect(screen.getByText("Strategy")).toBeInTheDocument();
@@ -83,19 +86,17 @@ describe("ArgoRolloutDetails", () => {
 
   it("shows paused when pauseConditions exist", () => {
     render(
-      <MemoryRouter>
-        <ArgoRolloutDetails
-          extension={extension}
-          object={
-            {
-              spec: {},
-              status: {
-                pauseConditions: [{ reason: "CanaryPauseStep", startTime: "2025-01-01T00:00:00Z" }],
-              },
-            } as any
-          }
-        />
-      </MemoryRouter>,
+      <ArgoRolloutDetails
+        extension={extension}
+        object={
+          {
+            spec: {},
+            status: {
+              pauseConditions: [{ reason: "CanaryPauseStep", startTime: "2025-01-01T00:00:00Z" }],
+            },
+          } as any
+        }
+      />,
     );
 
     expect(screen.getAllByText("Paused").length).toBeGreaterThanOrEqual(1);
@@ -104,21 +105,19 @@ describe("ArgoRolloutDetails", () => {
 
   it("shows promote and promote full for promotable pause", () => {
     render(
-      <MemoryRouter>
-        <ArgoRolloutDetails
-          extension={extension}
-          object={
-            {
-              getName: () => "demo-rollout",
-              spec: { paused: false },
-              status: {
-                phase: "Paused",
-                pauseConditions: [{ reason: "CanaryPauseStep", startTime: "2025-01-01T00:00:00Z" }],
-              },
-            } as any
-          }
-        />
-      </MemoryRouter>,
+      <ArgoRolloutDetails
+        extension={extension}
+        object={
+          {
+            getName: () => "demo-rollout",
+            spec: { paused: false },
+            status: {
+              phase: "Paused",
+              pauseConditions: [{ reason: "CanaryPauseStep", startTime: "2025-01-01T00:00:00Z" }],
+            },
+          } as any
+        }
+      />,
     );
 
     expect(screen.getByRole("button", { name: /^Promote$/ })).toBeInTheDocument();
@@ -127,27 +126,25 @@ describe("ArgoRolloutDetails", () => {
 
   it("does not show promote button for manual pause only", () => {
     render(
-      <MemoryRouter>
-        <ArgoRolloutDetails
-          extension={extension}
-          object={
-            {
-              spec: { paused: true },
-              status: {
-                phase: "Paused",
-                pauseConditions: [],
-              },
-            } as any
-          }
-        />
-      </MemoryRouter>,
+      <ArgoRolloutDetails
+        extension={extension}
+        object={
+          {
+            spec: { paused: true },
+            status: {
+              phase: "Paused",
+              pauseConditions: [],
+            },
+          } as any
+        }
+      />,
     );
 
     expect(screen.queryByRole("button", { name: "Promote" })).not.toBeInTheDocument();
   });
 
   it("shows abort button for progressing rollout and triggers patch", async () => {
-    (Renderer.Component.ConfirmDialog.confirm as jest.Mock).mockResolvedValueOnce(true);
+    (Renderer.Component.ConfirmDialog.confirm as Mock).mockResolvedValueOnce(true);
     const user = userEvent.setup();
     const object = {
       getName: () => "demo-rollout",
@@ -157,11 +154,7 @@ describe("ArgoRolloutDetails", () => {
       },
     } as any;
 
-    render(
-      <MemoryRouter>
-        <ArgoRolloutDetails extension={extension} object={object} />
-      </MemoryRouter>,
-    );
+    render(<ArgoRolloutDetails extension={extension} object={object} />);
 
     const abortButton = screen.getByRole("button", { name: "Abort" });
     expect(abortButton).toBeInTheDocument();
@@ -196,11 +189,7 @@ describe("ArgoRolloutDetails", () => {
       },
     } as any;
 
-    render(
-      <MemoryRouter>
-        <ArgoRolloutDetails extension={extension} object={object} />
-      </MemoryRouter>,
-    );
+    render(<ArgoRolloutDetails extension={extension} object={object} />);
 
     const retryButton = screen.getByRole("button", { name: "Retry" });
     expect(retryButton).toBeInTheDocument();
@@ -224,24 +213,22 @@ describe("ArgoRolloutDetails", () => {
   it("shows abort error notification when abort request fails", async () => {
     const { requestPatchMock } = getPromoteMocks();
     requestPatchMock.mockRejectedValueOnce(new Error("abort denied"));
-    (Renderer.Component.ConfirmDialog.confirm as jest.Mock).mockResolvedValueOnce(true);
+    (Renderer.Component.ConfirmDialog.confirm as Mock).mockResolvedValueOnce(true);
     const user = userEvent.setup();
 
     render(
-      <MemoryRouter>
-        <ArgoRolloutDetails
-          extension={extension}
-          object={
-            {
-              getName: () => "demo-rollout",
-              getNs: () => "default",
-              status: {
-                phase: "Progressing",
-              },
-            } as any
-          }
-        />
-      </MemoryRouter>,
+      <ArgoRolloutDetails
+        extension={extension}
+        object={
+          {
+            getName: () => "demo-rollout",
+            getNs: () => "default",
+            status: {
+              phase: "Progressing",
+            },
+          } as any
+        }
+      />,
     );
 
     await user.click(screen.getByRole("button", { name: "Abort" }));
@@ -251,23 +238,21 @@ describe("ArgoRolloutDetails", () => {
 
   it("does not patch when abort confirmation is cancelled", async () => {
     const { patchMock } = getPromoteMocks();
-    (Renderer.Component.ConfirmDialog.confirm as jest.Mock).mockResolvedValueOnce(false);
+    (Renderer.Component.ConfirmDialog.confirm as Mock).mockResolvedValueOnce(false);
     const user = userEvent.setup();
 
     render(
-      <MemoryRouter>
-        <ArgoRolloutDetails
-          extension={extension}
-          object={
-            {
-              getName: () => "demo-rollout",
-              status: {
-                phase: "Progressing",
-              },
-            } as any
-          }
-        />
-      </MemoryRouter>,
+      <ArgoRolloutDetails
+        extension={extension}
+        object={
+          {
+            getName: () => "demo-rollout",
+            status: {
+              phase: "Progressing",
+            },
+          } as any
+        }
+      />,
     );
 
     await user.click(screen.getByRole("button", { name: "Abort" }));

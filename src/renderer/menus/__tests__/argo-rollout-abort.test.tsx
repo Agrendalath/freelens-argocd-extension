@@ -1,25 +1,33 @@
+// @vitest-environment jsdom
+
 import { Renderer } from "@freelensapp/extensions";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ArgoRolloutAbortMenuItem } from "../argo-rollout-abort";
 
-const patchMock = jest.fn();
+import type { Mock } from "vitest";
 
-jest.mock("../../k8s/rollouts", () => ({
-  getArgoRolloutStore: () => ({
-    patch: patchMock,
-  }),
-  canAbortRollout: jest.requireActual("../../k8s/rollouts/state").canAbortRollout,
-}));
+const patchMock = vi.fn();
+
+vi.mock("../../k8s/rollouts", async () => {
+  const actual = await vi.importActual<typeof import("../../k8s/rollouts/state")>("../../k8s/rollouts/state");
+  return {
+    getArgoRolloutStore: () => ({
+      patch: patchMock,
+    }),
+    canAbortRollout: actual.canAbortRollout,
+  };
+});
 
 const extension = { name: "argocd-test-extension" } as any;
 
 describe("ArgoRolloutAbortMenuItem", () => {
   beforeEach(() => {
     patchMock.mockReset();
-    (Renderer.Component.ConfirmDialog.confirm as jest.Mock).mockReset();
-    (Renderer.Component.Notifications.ok as jest.Mock).mockReset();
-    (Renderer.Component.Notifications.error as jest.Mock).mockReset();
+    (Renderer.Component.ConfirmDialog.confirm as Mock).mockReset();
+    (Renderer.Component.Notifications.ok as Mock).mockReset();
+    (Renderer.Component.Notifications.error as Mock).mockReset();
   });
 
   it("renders when rollout is progressing", () => {
@@ -59,7 +67,7 @@ describe("ArgoRolloutAbortMenuItem", () => {
 
   it("confirms and patches rollout when clicked", async () => {
     patchMock.mockResolvedValueOnce(undefined);
-    (Renderer.Component.ConfirmDialog.confirm as jest.Mock).mockResolvedValueOnce(true);
+    (Renderer.Component.ConfirmDialog.confirm as Mock).mockResolvedValueOnce(true);
     const user = userEvent.setup();
     const object = {
       getName: () => "demo-rollout",
@@ -87,7 +95,7 @@ describe("ArgoRolloutAbortMenuItem", () => {
   });
 
   it("does not patch when confirmation is cancelled", async () => {
-    (Renderer.Component.ConfirmDialog.confirm as jest.Mock).mockResolvedValueOnce(false);
+    (Renderer.Component.ConfirmDialog.confirm as Mock).mockResolvedValueOnce(false);
     const user = userEvent.setup();
 
     render(
@@ -113,7 +121,7 @@ describe("ArgoRolloutAbortMenuItem", () => {
 
   it("shows endpoint error message on failure", async () => {
     patchMock.mockRejectedValueOnce(new Error("abort denied"));
-    (Renderer.Component.ConfirmDialog.confirm as jest.Mock).mockResolvedValueOnce(true);
+    (Renderer.Component.ConfirmDialog.confirm as Mock).mockResolvedValueOnce(true);
     const user = userEvent.setup();
 
     render(
@@ -137,7 +145,7 @@ describe("ArgoRolloutAbortMenuItem", () => {
 
   it("shows fallback message for non-Error failures", async () => {
     patchMock.mockRejectedValueOnce({ code: 403 });
-    (Renderer.Component.ConfirmDialog.confirm as jest.Mock).mockResolvedValueOnce(true);
+    (Renderer.Component.ConfirmDialog.confirm as Mock).mockResolvedValueOnce(true);
     const user = userEvent.setup();
 
     render(

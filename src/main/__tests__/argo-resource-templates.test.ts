@@ -1,14 +1,16 @@
-const accessMock = jest.fn();
-const mkdirMock = jest.fn();
-const writeFileMock = jest.fn();
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-jest.mock("node:fs/promises", () => ({
+const accessMock = vi.fn();
+const mkdirMock = vi.fn();
+const writeFileMock = vi.fn();
+
+vi.mock("node:fs/promises", () => ({
   access: (...args: any[]) => accessMock(...args),
   mkdir: (...args: any[]) => mkdirMock(...args),
   writeFile: (...args: any[]) => writeFileMock(...args),
 }));
 
-jest.mock("node:os", () => ({
+vi.mock("node:os", () => ({
   homedir: () => "/home/tester",
 }));
 

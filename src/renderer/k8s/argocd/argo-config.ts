@@ -118,7 +118,9 @@ export const decodeBase64 = (value?: string): string | undefined => {
   }
 
   try {
-    return Buffer.from(value, "base64").toString("utf8");
+    // Web Crypto-free base64 decode that works in both the renderer and Node,
+    // and throws on input that is not valid UTF-8, as Buffer's decoder does not.
+    return new TextDecoder("utf-8").decode(Uint8Array.from(atob(value), (c) => c.charCodeAt(0)));
   } catch {
     return undefined;
   }

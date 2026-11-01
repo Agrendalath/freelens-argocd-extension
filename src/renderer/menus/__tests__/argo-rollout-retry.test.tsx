@@ -1,24 +1,32 @@
+// @vitest-environment jsdom
+
 import { Renderer } from "@freelensapp/extensions";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ArgoRolloutRetryMenuItem } from "../argo-rollout-retry";
 
-const patchMock = jest.fn();
+import type { Mock } from "vitest";
 
-jest.mock("../../k8s/rollouts", () => ({
-  getArgoRolloutStore: () => ({
-    patch: patchMock,
-  }),
-  canRetryRollout: jest.requireActual("../../k8s/rollouts/state").canRetryRollout,
-}));
+const patchMock = vi.fn();
+
+vi.mock("../../k8s/rollouts", async () => {
+  const actual = await vi.importActual<typeof import("../../k8s/rollouts/state")>("../../k8s/rollouts/state");
+  return {
+    getArgoRolloutStore: () => ({
+      patch: patchMock,
+    }),
+    canRetryRollout: actual.canRetryRollout,
+  };
+});
 
 const extension = { name: "argocd-test-extension" } as any;
 
 describe("ArgoRolloutRetryMenuItem", () => {
   beforeEach(() => {
     patchMock.mockReset();
-    (Renderer.Component.Notifications.ok as jest.Mock).mockReset();
-    (Renderer.Component.Notifications.error as jest.Mock).mockReset();
+    (Renderer.Component.Notifications.ok as Mock).mockReset();
+    (Renderer.Component.Notifications.error as Mock).mockReset();
   });
 
   it("renders when rollout is degraded", () => {

@@ -34,6 +34,9 @@ export class ArgoAnalysisTemplate extends Renderer.K8sApi.LensExtensionKubeObjec
   AnalysisTemplateStatus,
   AnalysisTemplateSpec
 > {
+  declare kind: "AnalysisTemplate";
+  declare apiVersion: "argoproj.io/v1alpha1";
+
   static readonly kind = "AnalysisTemplate";
   static readonly namespaced = true;
   static readonly apiBase = "/apis/argoproj.io/v1alpha1/analysistemplates";

@@ -1,7 +1,5 @@
 import { Common, Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
-import { Link } from "react-router-dom";
-import { withErrorPage } from "../../components/error-page";
 import {
   ArgoRollout,
   type ArgoRolloutApi,
@@ -13,10 +11,9 @@ import {
   getRolloutStrategyLabel,
 } from "../../k8s/rollouts";
 import styles from "./argo-rollouts-page.module.scss";
-import stylesInline from "./argo-rollouts-page.module.scss?inline";
 
 const {
-  Component: { KubeObjectAge, KubeObjectListLayout, WithTooltip },
+  Component: { KubeObjectAge, KubeObjectListLayout, MaybeLink, WithTooltip },
   K8sApi: { namespacesApi },
   Navigation: { getDetailsUrl },
 } = Renderer;
@@ -72,51 +69,46 @@ export const ArgoRolloutsTabContent = observer(() => {
     );
 
   return (
-    <>
-      <style>{stylesInline}</style>
-      <KubeObjectListLayout<ArgoRollout, ArgoRolloutApi>
-        tableId={`${ArgoRollout.crd.plural}Table`}
-        isConfigurable
-        className={styles.page}
-        store={rolloutStore}
-        sortingCallbacks={sortingCallbacks}
-        searchFilters={[(object: ArgoRollout) => object.getSearchFields()]}
-        renderHeaderTitle={ArgoRollout.crd.title}
-        renderTableHeader={renderTableHeader}
-        renderTableContents={(object: ArgoRollout) => [
-          <Link key="name-link" to={getRolloutDetailsUrl(object)} onClick={stopPropagation}>
-            <WithTooltip>{object.getName()}</WithTooltip>
-          </Link>,
-          <Link
-            key="namespace-link"
-            to={getDetailsUrl(namespacesApi.formatUrlForNotListing({ name: object.getNs() }))}
-            onClick={stopPropagation}
-          >
-            <WithTooltip>{object.getNs()}</WithTooltip>
-          </Link>,
-          <WithTooltip>{getRolloutStrategyLabel(object.spec?.strategy)}</WithTooltip>,
-          <WithTooltip>{formatReplicaCell(object.spec?.replicas ?? object.status?.replicas)}</WithTooltip>,
-          <WithTooltip>{formatReplicaCell(object.status?.updatedReplicas)}</WithTooltip>,
-          <WithTooltip>{formatReplicaCell(object.status?.readyReplicas)}</WithTooltip>,
-          <WithTooltip>{formatReplicaCell(object.status?.availableReplicas)}</WithTooltip>,
-          <WithTooltip tooltip={getBlueGreenTrafficTooltip(object) || undefined}>
-            {getBlueGreenPromotionLabel(object)}
-          </WithTooltip>,
-          <WithTooltip>{getRolloutStateLabel(object)}</WithTooltip>,
-          <WithTooltip>{getRolloutStateReason(object)}</WithTooltip>,
-          <KubeObjectAge object={object} key="age" />,
-        ]}
-      />
-    </>
+    <KubeObjectListLayout<ArgoRollout, ArgoRolloutApi>
+      tableId={`${ArgoRollout.crd.plural}Table`}
+      isConfigurable
+      className={styles.page}
+      store={rolloutStore}
+      sortingCallbacks={sortingCallbacks}
+      searchFilters={[(object: ArgoRollout) => object.getSearchFields()]}
+      renderHeaderTitle={ArgoRollout.crd.title}
+      renderTableHeader={renderTableHeader}
+      renderTableContents={(object: ArgoRollout) => [
+        <MaybeLink key="name-link" to={getRolloutDetailsUrl(object)} onClick={stopPropagation}>
+          <WithTooltip>{object.getName()}</WithTooltip>
+        </MaybeLink>,
+        <MaybeLink
+          key="namespace-link"
+          to={getDetailsUrl(namespacesApi.formatUrlForNotListing({ name: object.getNs() }))}
+          onClick={stopPropagation}
+        >
+          <WithTooltip>{object.getNs()}</WithTooltip>
+        </MaybeLink>,
+        <WithTooltip>{getRolloutStrategyLabel(object.spec?.strategy)}</WithTooltip>,
+        <WithTooltip>{formatReplicaCell(object.spec?.replicas ?? object.status?.replicas)}</WithTooltip>,
+        <WithTooltip>{formatReplicaCell(object.status?.updatedReplicas)}</WithTooltip>,
+        <WithTooltip>{formatReplicaCell(object.status?.readyReplicas)}</WithTooltip>,
+        <WithTooltip>{formatReplicaCell(object.status?.availableReplicas)}</WithTooltip>,
+        <WithTooltip tooltip={getBlueGreenTrafficTooltip(object) || undefined}>
+          {getBlueGreenPromotionLabel(object)}
+        </WithTooltip>,
+        <WithTooltip>{getRolloutStateLabel(object)}</WithTooltip>,
+        <WithTooltip>{getRolloutStateReason(object)}</WithTooltip>,
+        <KubeObjectAge object={object} key="age" />,
+      ]}
+    />
   );
 });
 
-export const ArgoRolloutsRolloutsPage = observer((props: ArgoRolloutsPageProps) =>
-  withErrorPage(props, () => {
-    return (
-      <>
-        <ArgoRolloutsTabContent />
-      </>
-    );
-  }),
-);
+export const ArgoRolloutsRolloutsPage = observer((props: ArgoRolloutsPageProps) => {
+  return (
+    <>
+      <ArgoRolloutsTabContent />
+    </>
+  );
+});

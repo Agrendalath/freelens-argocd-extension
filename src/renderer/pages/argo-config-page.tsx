@@ -9,7 +9,6 @@ import {
   ArgoCdApiMisconfiguredNotice,
   ArgoConnectionSourceBanner,
 } from "../components/argo-connection-source";
-import { withErrorPage } from "../components/error-page";
 import {
   getArgoSecretType,
   getNamespacesForArgoConfigQuery,
@@ -26,7 +25,6 @@ import {
   summarizeNotificationsData,
 } from "../k8s/argocd";
 import styles from "./argo-config-page.module.scss";
-import stylesInline from "./argo-config-page.module.scss?inline";
 
 const {
   Component: { KubeObjectAge, KubeObjectListLayout, Tab, Tabs, WithTooltip },
@@ -350,7 +348,6 @@ export const ArgoConfigTabContent = observer(() => {
   if (source === "api") {
     return (
       <>
-        <style>{stylesInline}</style>
         <ArgoConnectionSourceBanner />
         <ArgoCdApiConfigClusterOnlyNotice />
       </>
@@ -368,48 +365,45 @@ export const ArgoConfigTabContent = observer(() => {
   );
 
   return (
-    <>
-      <style>{stylesInline}</style>
-      <div className={styles.root}>
-        <div className={styles.header}>
-          <Tabs
-            className={styles.tabs}
-            withBorder
-            wrap
-            value={activeTab}
-            onChange={(value) => setActiveTab(value as ArgoConfigTab)}
-          >
-            {tabOptions.map((tab) => (
-              <Tab key={tab.id} value={tab.id} label={tab.label} />
-            ))}
-          </Tabs>
-        </div>
-
-        <div className={styles.scrollBody}>
-          {!isLoaded ? (
-            <div className={styles.loading}>
-              <WithTooltip>Loading ArgoCD config resources...</WithTooltip>
-            </div>
-          ) : null}
-          {loadError ? (
-            <div className={styles.loading}>
-              <WithTooltip>{loadError}</WithTooltip>
-            </div>
-          ) : isLoaded ? (
-            <>
-              {activeTab === "repositories" && renderRepoList(repositorySecrets, "Repositories")}
-              {activeTab === "repo-creds" && renderRepoList(repoCredsSecrets, "Repo Credentials")}
-              {activeTab === "clusters" && renderClusterList(clusterSecrets)}
-              {activeTab === "notifications" && renderNotificationsList(notificationsResources)}
-              {activeTab === "configmaps" && renderConfigMapList(configMaps)}
-            </>
-          ) : null}
-        </div>
+    <div className={styles.root}>
+      <div className={styles.header}>
+        <Tabs
+          className={styles.tabs}
+          withBorder
+          wrap
+          value={activeTab}
+          onChange={(value) => setActiveTab(value as ArgoConfigTab)}
+        >
+          {tabOptions.map((tab) => (
+            <Tab key={tab.id} value={tab.id} label={tab.label} />
+          ))}
+        </Tabs>
       </div>
-    </>
+
+      <div className={styles.scrollBody}>
+        {!isLoaded ? (
+          <div className={styles.loading}>
+            <WithTooltip>Loading ArgoCD config resources...</WithTooltip>
+          </div>
+        ) : null}
+        {loadError ? (
+          <div className={styles.loading}>
+            <WithTooltip>{loadError}</WithTooltip>
+          </div>
+        ) : isLoaded ? (
+          <>
+            {activeTab === "repositories" && renderRepoList(repositorySecrets, "Repositories")}
+            {activeTab === "repo-creds" && renderRepoList(repoCredsSecrets, "Repo Credentials")}
+            {activeTab === "clusters" && renderClusterList(clusterSecrets)}
+            {activeTab === "notifications" && renderNotificationsList(notificationsResources)}
+            {activeTab === "configmaps" && renderConfigMapList(configMaps)}
+          </>
+        ) : null}
+      </div>
+    </div>
   );
 });
 
-export const ArgoConfigPage = observer((props: ArgoConfigPageProps) =>
-  withErrorPage(props, () => <ArgoConfigTabContent />),
-);
+export const ArgoConfigPage = observer((props: ArgoConfigPageProps) => {
+  return <ArgoConfigTabContent />;
+});

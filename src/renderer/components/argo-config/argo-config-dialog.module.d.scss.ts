@@ -7,5 +7,6 @@ declare const classNames: {
   readonly kvRow: "kvRow";
   readonly kvKey: "kvKey";
   readonly kvValue: "kvValue";
+  readonly dialogBody: "dialogBody";
 };
 export = classNames;

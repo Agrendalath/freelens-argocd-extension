@@ -1,5 +1,7 @@
+// @vitest-environment jsdom
+
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { describe, expect, it, vi } from "vitest";
 import { ArgoApplicationsTabContent } from "../argo-applications-page";
 
 const mockItems = [
@@ -21,7 +23,7 @@ const mockStore = {
   },
 };
 
-jest.mock("../../k8s/argocd", () => ({
+vi.mock("../../k8s/argocd", () => ({
   ArgoApplication: {
     crd: {
       plural: "applications",
@@ -33,11 +35,7 @@ jest.mock("../../k8s/argocd", () => ({
 
 describe("ArgoApplicationsTabContent", () => {
   it("links application name to application details", () => {
-    render(
-      <MemoryRouter>
-        <ArgoApplicationsTabContent />
-      </MemoryRouter>,
-    );
+    render(<ArgoApplicationsTabContent />);
 
     const nameLink = screen.getByRole("link", { name: "demo-app" });
 
@@ -45,11 +43,7 @@ describe("ArgoApplicationsTabContent", () => {
   });
 
   it("links namespace to namespace details", () => {
-    render(
-      <MemoryRouter>
-        <ArgoApplicationsTabContent />
-      </MemoryRouter>,
-    );
+    render(<ArgoApplicationsTabContent />);
 
     const namespaceLink = screen.getByRole("link", { name: "argocd" });
 

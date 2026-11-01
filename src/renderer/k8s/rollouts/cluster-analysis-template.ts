@@ -11,6 +11,9 @@ export class ArgoClusterAnalysisTemplate extends Renderer.K8sApi.LensExtensionKu
   ClusterAnalysisTemplateStatus,
   ClusterAnalysisTemplateSpec
 > {
+  declare kind: "ClusterAnalysisTemplate";
+  declare apiVersion: "argoproj.io/v1alpha1";
+
   static readonly kind = "ClusterAnalysisTemplate";
   static readonly namespaced = false;
   static readonly apiBase = "/apis/argoproj.io/v1alpha1/clusteranalysistemplates";

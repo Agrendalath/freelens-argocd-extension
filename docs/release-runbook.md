@@ -53,8 +53,8 @@ GitHub Actions runs [`.github/workflows/release.yml`](../.github/workflows/relea
 
 - Typecheck, lint, unit tests, build
 - Build runs with `VITE_PRESERVE_MODULES=false` for release-safe output
-- Fails fast if `out/` still contains `.vite_external` references
-- Uploads `out/` as artifact `extension-build-out`
+- Fails fast if `dist/` still contains `.vite_external` references
+- Uploads `dist/` as artifact `extension-build-dist`
 
 ### Job: `publish-npm` (tag pushes only)
 

@@ -19,7 +19,6 @@ import {
 } from "../../k8s/argocd";
 import { runGuardedArgoMutation } from "../../mutations";
 import styles from "./argo-config-dialog.module.scss";
-import stylesInline from "./argo-config-dialog.module.scss?inline";
 import { type ArgoConfigKind, argoConfigDialogStore } from "./argo-config-dialog-store";
 
 const {
@@ -819,25 +818,22 @@ export const ArgoConfigDialog = observer(() => {
 
   return (
     <Dialog isOpen={isOpen} close={closeDialog}>
-      <>
-        <style>{stylesInline}</style>
-        <div className={styles.dialogContent}>
-          <div className="flex gaps column">
-            <h3 className={styles.dialogHeader}>{title}</h3>
-            {error && <div className={styles.dialogError}>{error}</div>}
-            {target.kind === "repository" && renderRepoFields(target.kind)}
-            {target.kind === "repo-creds" && renderRepoFields(target.kind)}
-            {target.kind === "cluster" && renderClusterFields()}
-            {target.kind === "configmap" && renderConfigMapFields()}
-            <div className={styles.dialogActions}>
-              <Button onClick={closeDialog}>Cancel</Button>
-              <Button primary onClick={handleSave}>
-                {mode === "create" ? "Create" : "Save"}
-              </Button>
-            </div>
+      <div className={styles.dialogContent}>
+        <div className={styles.dialogBody}>
+          <h3 className={styles.dialogHeader}>{title}</h3>
+          {error && <div className={styles.dialogError}>{error}</div>}
+          {target.kind === "repository" && renderRepoFields(target.kind)}
+          {target.kind === "repo-creds" && renderRepoFields(target.kind)}
+          {target.kind === "cluster" && renderClusterFields()}
+          {target.kind === "configmap" && renderConfigMapFields()}
+          <div className={styles.dialogActions}>
+            <Button onClick={closeDialog}>Cancel</Button>
+            <Button primary onClick={handleSave}>
+              {mode === "create" ? "Create" : "Save"}
+            </Button>
           </div>
         </div>
-      </>
+      </div>
     </Dialog>
   );
 });

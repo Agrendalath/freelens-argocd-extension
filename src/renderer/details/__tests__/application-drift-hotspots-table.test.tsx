@@ -1,4 +1,7 @@
+// @vitest-environment jsdom
+
 import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { ApplicationDriftHotspotsTable } from "../application-drift-hotspots-table";
 
 describe("ApplicationDriftHotspotsTable", () => {
@@ -15,7 +18,7 @@ describe("ApplicationDriftHotspotsTable", () => {
   });
 
   it("shows View diff only for OutOfSync hotspots when onViewDiff is provided", () => {
-    const onViewDiff = jest.fn();
+    const onViewDiff = vi.fn();
 
     render(<ApplicationDriftHotspotsTable resources={resources} onViewDiff={onViewDiff} />);
 

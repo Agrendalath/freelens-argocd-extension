@@ -1,22 +1,18 @@
 import { Common, Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
 import { getArgoCdApiClient, getArgoCdDataSource, getArgoPreferences, useArgoCdApiQuery } from "../argocd-api";
 import { argoApiApplicationDrawerStore } from "../components/argo-api-details";
 import { ArgoApiCheckboxFilter, ArgoApiListToolbar, useArgoApiApplicationFilters } from "../components/argo-api-list";
 import { ArgoCdApiMisconfiguredNotice, ArgoConnectionSourceBanner } from "../components/argo-connection-source";
-import { withErrorPage } from "../components/error-page";
 import { StatusBadge } from "../components/shared";
 import { ArgoApplication, type ArgoApplicationApi, getArgoApplicationStore } from "../k8s/argocd";
 import { createEnumFromKeys } from "../utils";
 import apiListStyles from "./argo-api-list.module.scss";
-import apiListStylesInline from "./argo-api-list.module.scss?inline";
 import styles from "./argo-applications-page.module.scss";
-import stylesInline from "./argo-applications-page.module.scss?inline";
 
 const {
-  Component: { KubeObjectAge, KubeObjectListLayout, Table, TableCell, TableHead, TableRow, WithTooltip },
+  Component: { KubeObjectAge, KubeObjectListLayout, MaybeLink, Table, TableCell, TableHead, TableRow, WithTooltip },
   K8sApi: { namespacesApi },
   Navigation: { getDetailsUrl },
 } = Renderer;
@@ -74,35 +70,32 @@ const ArgoApplicationsClusterTabContent = observer(() => {
     );
 
   return (
-    <>
-      <style>{stylesInline}</style>
-      <KubeObjectListLayout<ArgoApplication, ArgoApplicationApi>
-        tableId={`${ArgoApplication.crd.plural}Table`}
-        isConfigurable
-        className={styles.page}
-        store={applicationStore}
-        sortingCallbacks={sortingCallbacks}
-        searchFilters={[(object: ArgoApplication) => object.getSearchFields()]}
-        renderHeaderTitle={ArgoApplication.crd.title}
-        renderTableHeader={renderTableHeader}
-        renderTableContents={(object: ArgoApplication) => [
-          <Link key="name-link" to={getApplicationDetailsUrl(object)} onClick={stopPropagation}>
-            <WithTooltip>{object.getName()}</WithTooltip>
-          </Link>,
-          <Link
-            key="namespace-link"
-            to={getDetailsUrl(namespacesApi.formatUrlForNotListing({ name: object.getNs() }))}
-            onClick={stopPropagation}
-          >
-            <WithTooltip>{object.getNs()}</WithTooltip>
-          </Link>,
-          <WithTooltip>{object.spec?.project ?? "N/A"}</WithTooltip>,
-          <StatusBadge status={object.status?.sync?.status} fallbackLabel="N/A" />,
-          <StatusBadge status={object.status?.health?.status} fallbackLabel="N/A" />,
-          <KubeObjectAge object={object} key="age" />,
-        ]}
-      />
-    </>
+    <KubeObjectListLayout<ArgoApplication, ArgoApplicationApi>
+      tableId={`${ArgoApplication.crd.plural}Table`}
+      isConfigurable
+      className={styles.page}
+      store={applicationStore}
+      sortingCallbacks={sortingCallbacks}
+      searchFilters={[(object: ArgoApplication) => object.getSearchFields()]}
+      renderHeaderTitle={ArgoApplication.crd.title}
+      renderTableHeader={renderTableHeader}
+      renderTableContents={(object: ArgoApplication) => [
+        <MaybeLink key="name-link" to={getApplicationDetailsUrl(object)} onClick={stopPropagation}>
+          <WithTooltip>{object.getName()}</WithTooltip>
+        </MaybeLink>,
+        <MaybeLink
+          key="namespace-link"
+          to={getDetailsUrl(namespacesApi.formatUrlForNotListing({ name: object.getNs() }))}
+          onClick={stopPropagation}
+        >
+          <WithTooltip>{object.getNs()}</WithTooltip>
+        </MaybeLink>,
+        <WithTooltip>{object.spec?.project ?? "N/A"}</WithTooltip>,
+        <StatusBadge status={object.status?.sync?.status} fallbackLabel="N/A" />,
+        <StatusBadge status={object.status?.health?.status} fallbackLabel="N/A" />,
+        <KubeObjectAge object={object} key="age" />,
+      ]}
+    />
   );
 });
 
@@ -143,113 +136,109 @@ const ArgoApplicationsApiTabContent = observer(() => {
   };
 
   return (
-    <>
-      <style>{stylesInline}</style>
-      <style>{apiListStylesInline}</style>
-      <div className={apiListStyles.root}>
-        <ArgoConnectionSourceBanner />
-        {isLoading ? <div className={apiListStyles.loading}>Loading applications from Argo CD API...</div> : null}
-        {error ? <div className={apiListStyles.error}>{error}</div> : null}
-        {!isLoading && !error && applications.length === 0 ? (
-          <div className={apiListStyles.empty}>No applications</div>
-        ) : null}
-        {!isLoading && !error && applications.length > 0 ? (
-          <div className={apiListStyles.page}>
-            <ArgoApiListToolbar
-              title="Argo Applications"
-              search={search}
-              onSearchChange={setSearch}
-              namespace={namespace}
-              onNamespaceChange={setNamespace}
-              namespaces={namespaces}
-              filteredCount={filteredCount}
-              totalCount={totalCount}
-              searchPlaceholder="Search applications..."
-              extraFilters={
-                <>
-                  <ArgoApiCheckboxFilter
-                    label="Project"
-                    options={projects}
-                    selected={selectedProjects}
-                    onChange={setSelectedProjects}
-                  />
-                  <ArgoApiCheckboxFilter
-                    label="Sync Status"
-                    options={syncStatuses}
-                    selected={selectedSyncStatuses}
-                    onChange={setSelectedSyncStatuses}
-                  />
-                  <ArgoApiCheckboxFilter
-                    label="Health Status"
-                    options={healthStatuses}
-                    selected={selectedHealthStatuses}
-                    onChange={setSelectedHealthStatuses}
-                  />
-                </>
-              }
-            />
-            {filteredItems.length === 0 ? (
-              <div className={apiListStyles.empty}>No applications match the current filters</div>
-            ) : (
-              <div className={apiListStyles.tableWrap}>
-                <Table
-                  tableId="argocdApiApplications"
-                  sortable={apiSortingCallbacks}
-                  sortByDefault={apiSortByDefault}
-                  scrollable={false}
-                  sortSyncWithUrl={false}
-                >
-                  <TableHead flat sticky>
-                    <TableCell sortBy={apiSortByNames.name}>Name</TableCell>
-                    <TableCell sortBy={apiSortByNames.namespace}>Namespace</TableCell>
-                    <TableCell sortBy={apiSortByNames.project}>Project</TableCell>
-                    <TableCell sortBy={apiSortByNames.syncStatus}>Sync Status</TableCell>
-                    <TableCell sortBy={apiSortByNames.healthStatus}>Health Status</TableCell>
-                    <TableCell sortBy={apiSortByNames.age}>Age</TableCell>
-                  </TableHead>
-                  {filteredItems.map((object) => (
-                    <TableRow
-                      key={`${object.getNs()}/${object.getName()}`}
-                      className={apiListStyles.clickableRow}
-                      sortItem={object}
-                      onClick={() => openDetails(object)}
-                    >
-                      <TableCell>
-                        <button
-                          type="button"
-                          className={apiListStyles.rowLink}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            openDetails(object);
-                          }}
-                        >
-                          <WithTooltip>{object.getName()}</WithTooltip>
-                        </button>
-                      </TableCell>
-                      <TableCell>
-                        <WithTooltip>{object.getNs() || "N/A"}</WithTooltip>
-                      </TableCell>
-                      <TableCell>
-                        <WithTooltip>{object.spec?.project ?? "N/A"}</WithTooltip>
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={object.status?.sync?.status} fallbackLabel="N/A" />
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={object.status?.health?.status} fallbackLabel="N/A" />
-                      </TableCell>
-                      <TableCell>
-                        <KubeObjectAge object={object} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </Table>
-              </div>
-            )}
-          </div>
-        ) : null}
-      </div>
-    </>
+    <div className={apiListStyles.root}>
+      <ArgoConnectionSourceBanner />
+      {isLoading ? <div className={apiListStyles.loading}>Loading applications from Argo CD API...</div> : null}
+      {error ? <div className={apiListStyles.error}>{error}</div> : null}
+      {!isLoading && !error && applications.length === 0 ? (
+        <div className={apiListStyles.empty}>No applications</div>
+      ) : null}
+      {!isLoading && !error && applications.length > 0 ? (
+        <div className={apiListStyles.page}>
+          <ArgoApiListToolbar
+            title="Argo Applications"
+            search={search}
+            onSearchChange={setSearch}
+            namespace={namespace}
+            onNamespaceChange={setNamespace}
+            namespaces={namespaces}
+            filteredCount={filteredCount}
+            totalCount={totalCount}
+            searchPlaceholder="Search applications..."
+            extraFilters={
+              <>
+                <ArgoApiCheckboxFilter
+                  label="Project"
+                  options={projects}
+                  selected={selectedProjects}
+                  onChange={setSelectedProjects}
+                />
+                <ArgoApiCheckboxFilter
+                  label="Sync Status"
+                  options={syncStatuses}
+                  selected={selectedSyncStatuses}
+                  onChange={setSelectedSyncStatuses}
+                />
+                <ArgoApiCheckboxFilter
+                  label="Health Status"
+                  options={healthStatuses}
+                  selected={selectedHealthStatuses}
+                  onChange={setSelectedHealthStatuses}
+                />
+              </>
+            }
+          />
+          {filteredItems.length === 0 ? (
+            <div className={apiListStyles.empty}>No applications match the current filters</div>
+          ) : (
+            <div className={apiListStyles.tableWrap}>
+              <Table
+                tableId="argocdApiApplications"
+                sortable={apiSortingCallbacks}
+                sortByDefault={apiSortByDefault}
+                scrollable={false}
+                sortSyncWithUrl={false}
+              >
+                <TableHead flat sticky>
+                  <TableCell sortBy={apiSortByNames.name}>Name</TableCell>
+                  <TableCell sortBy={apiSortByNames.namespace}>Namespace</TableCell>
+                  <TableCell sortBy={apiSortByNames.project}>Project</TableCell>
+                  <TableCell sortBy={apiSortByNames.syncStatus}>Sync Status</TableCell>
+                  <TableCell sortBy={apiSortByNames.healthStatus}>Health Status</TableCell>
+                  <TableCell sortBy={apiSortByNames.age}>Age</TableCell>
+                </TableHead>
+                {filteredItems.map((object) => (
+                  <TableRow
+                    key={`${object.getNs()}/${object.getName()}`}
+                    className={apiListStyles.clickableRow}
+                    sortItem={object}
+                    onClick={() => openDetails(object)}
+                  >
+                    <TableCell>
+                      <button
+                        type="button"
+                        className={apiListStyles.rowLink}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          openDetails(object);
+                        }}
+                      >
+                        <WithTooltip>{object.getName()}</WithTooltip>
+                      </button>
+                    </TableCell>
+                    <TableCell>
+                      <WithTooltip>{object.getNs() || "N/A"}</WithTooltip>
+                    </TableCell>
+                    <TableCell>
+                      <WithTooltip>{object.spec?.project ?? "N/A"}</WithTooltip>
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={object.status?.sync?.status} fallbackLabel="N/A" />
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={object.status?.health?.status} fallbackLabel="N/A" />
+                    </TableCell>
+                    <TableCell>
+                      <KubeObjectAge object={object} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </Table>
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
   );
 });
 
@@ -264,12 +253,10 @@ export const ArgoApplicationsTabContent = observer(() => {
   return <ArgoApplicationsClusterTabContent />;
 });
 
-export const ArgoApplicationsPage = observer((props: ArgoApplicationsPageProps) =>
-  withErrorPage(props, () => {
-    return (
-      <>
-        <ArgoApplicationsTabContent />
-      </>
-    );
-  }),
-);
+export const ArgoApplicationsPage = observer((props: ArgoApplicationsPageProps) => {
+  return (
+    <>
+      <ArgoApplicationsTabContent />
+    </>
+  );
+});

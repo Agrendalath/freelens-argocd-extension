@@ -1,4 +1,7 @@
+// @vitest-environment jsdom
+
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 import { ArgoConfigMenuItem } from "../argo-config-menu";
 
 const extension = { name: "argocd-test-extension" } as any;

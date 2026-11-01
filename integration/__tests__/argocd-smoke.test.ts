@@ -1,3 +1,4 @@
+import { describe, it } from "vitest";
 import * as utils from "../helpers/utils";
 
 describe("argocd extension smoke tests", () => {

@@ -1,4 +1,6 @@
-jest.mock("../../common/store", () => ({
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("../../common/store", () => ({
   ArgoPreferencesStore: {
     getInstanceOrCreate: () => ({
       loadExtension: () => {},
@@ -6,11 +8,11 @@ jest.mock("../../common/store", () => ({
   },
 }));
 
-jest.mock("../icons", () => ({
+vi.mock("../icons", () => ({
   ArgoPlainLogoIcon: () => null,
 }));
 
-jest.mock("../preferences", () => ({
+vi.mock("../preferences", () => ({
   ArgoPreferenceInput: () => null,
   ArgoPreferenceHint: () => null,
 }));
@@ -32,8 +34,8 @@ const createRenderer = () =>
       manifest: {
         name: "argocd-test-extension",
         version: "0.0.0",
-        main: "out/main/index.js",
-        renderer: "out/renderer/index.js",
+        main: "dist/main.js",
+        renderer: "dist/renderer.js",
       },
       manifestPath: "/tmp/manifest.yml",
       isBundled: false,
@@ -55,12 +57,10 @@ describe("ArgoRenderer registrations", () => {
     expect(typeof components[0]?.shouldRender?.get).toBe("function");
   });
 
-  it("registers AppProject page and menu entries", () => {
+  it("registers cluster pages by id, with page params for the API details page", () => {
     const renderer = createRenderer();
 
     const pageIds = renderer.clusterPages.map((page: any) => page.id);
-    const pageRoutes = renderer.clusterPages.map((page: any) => page.routePath);
-    const menuIds = renderer.clusterPageMenus.map((menu: any) => menu.id);
 
     expect(pageIds).toContain("appprojects");
     expect(pageIds).toContain("applicationsets");
@@ -75,20 +75,15 @@ describe("ArgoRenderer registrations", () => {
     expect(pageIds).toContain("argo-workflows-cron-workflows");
     expect(pageIds).toContain("argo-workflows-templates");
     expect(pageIds).toContain("argo-workflows-cluster-templates");
-    expect(pageRoutes).toContain("/argo/argocd/appprojects");
-    expect(pageRoutes).toContain("/argo/argocd/applicationsets");
-    expect(pageRoutes).toContain("/argo/argocd/applications/:namespace/:name");
-    expect(pageRoutes).toContain("/argo/workflows");
-    expect(pageRoutes).toContain("/argo/workflows/cron-workflows");
-    expect(pageRoutes).toContain("/argo/workflows/workflow-templates");
-    expect(pageRoutes).toContain("/argo/workflows/cluster-workflow-templates");
-    expect(pageRoutes).toContain("/argo/rollouts/overview");
-    expect(pageRoutes).toContain("/argo/rollouts/analysis-runs");
-    expect(pageRoutes).toContain("/argo/rollouts/experiments");
-    expect(pageRoutes).toContain("/argo/rollouts/analysis-templates");
-    expect(pageRoutes).toContain("/argo/rollouts/cluster-analysis-templates");
-    expect(pageRoutes).toContain("/argocd/appprojects");
-    expect(pageRoutes).toContain("/argocd/applicationsets");
+
+    // v2: page URLs come from the page id; there is no routePath.
+    expect(renderer.clusterPages.every((page: any) => page.routePath === undefined)).toBe(true);
+
+    const apiDetailsPage = renderer.clusterPages.find((page: any) => page.id === "argocd-application-api-details");
+    expect(apiDetailsPage?.params).toEqual({ namespace: "", name: "" });
+
+    const menuIds = renderer.clusterPageMenus.map((menu: any) => menu.id);
+
     expect(menuIds).toContain("appprojects");
     expect(menuIds).toContain("applicationsets");
     expect(menuIds).toContain("argo-workflows-workflows-menu");
@@ -100,6 +95,31 @@ describe("ArgoRenderer registrations", () => {
     expect(menuIds).toContain("argo-rollouts-experiments-menu");
     expect(menuIds).toContain("argo-rollouts-analysis-templates-menu");
     expect(menuIds).toContain("argo-rollouts-cluster-analysis-templates-menu");
+  });
+
+  it("registers the custom resources it presents with pages of their own", () => {
+    const renderer = createRenderer();
+    const kinds = renderer.customResources.map((model: any) => model.kind);
+
+    expect(kinds).toEqual(
+      expect.arrayContaining([
+        "Application",
+        "ApplicationSet",
+        "AppProject",
+        "Rollout",
+        "AnalysisTemplate",
+        "ClusterAnalysisTemplate",
+        "AnalysisRun",
+        "Experiment",
+        "Workflow",
+        "CronWorkflow",
+        "WorkflowTemplate",
+        "ClusterWorkflowTemplate",
+      ]),
+    );
+    // Secret and ConfigMap are only decorated with details/menus, not listed.
+    expect(kinds).not.toContain("Secret");
+    expect(kinds).not.toContain("ConfigMap");
   });
 
   it("registers Argo CD connection preferences", () => {
@@ -127,6 +147,8 @@ describe("ArgoRenderer registrations", () => {
     expect(detailKinds).toContain("CronWorkflow");
     expect(detailKinds).toContain("WorkflowTemplate");
     expect(detailKinds).toContain("ClusterWorkflowTemplate");
+    expect(detailKinds).toContain("Secret");
+    expect(detailKinds).toContain("ConfigMap");
   });
 
   it("registers refresh, hard refresh, sync, adv sync and terminate menu items for applications", () => {

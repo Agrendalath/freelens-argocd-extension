@@ -8,6 +8,10 @@ with pre-release identifiers for beta builds.
 
 ## [Unreleased]
 
+### Changed
+
+- **Ported to the Freelens v2 extension API** (`engines.freelens: ^2.0.0`). ESM entry points built in Vite library mode to `dist/`, React 19 / mobx 7 / mobx-react 10 taken from the host, standard decorators, one tsconfig per runtime environment, and Vitest replacing Jest. Pages navigate through the extension instance and `Renderer.Component.MaybeLink` instead of `react-router-dom`; details and menu items register through `Renderer.K8sApi.detailsFor` / `menuItemFor` and render inside error boundaries; Argo CD API IPC uses the host's `Main.Ipc` / `Renderer.Ipc`. Page URLs changed from `/argo/...` to `/extension/<extension-id>/<page-id>`; in-page links are updated, old bookmarks do not redirect.
+
 ### Fixed
 
 - API mode Applications / AppProjects / ApplicationSets lists: search, namespace filter, and vertical scrolling.

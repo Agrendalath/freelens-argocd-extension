@@ -1,5 +1,7 @@
+// @vitest-environment jsdom
+
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { describe, expect, it, vi } from "vitest";
 import { ArgoAppProjectsTabContent } from "../argo-appprojects-page";
 
 const mockItems = [
@@ -31,7 +33,7 @@ const mockStore = {
   },
 };
 
-jest.mock("../../k8s/argocd", () => ({
+vi.mock("../../k8s/argocd", () => ({
   ArgoAppProject: {
     crd: {
       plural: "appprojects",
@@ -47,11 +49,7 @@ jest.mock("../../k8s/argocd", () => ({
 
 describe("ArgoAppProjectsTabContent", () => {
   it("links appproject name to appproject details", () => {
-    render(
-      <MemoryRouter>
-        <ArgoAppProjectsTabContent />
-      </MemoryRouter>,
-    );
+    render(<ArgoAppProjectsTabContent />);
 
     const nameLink = screen.getByRole("link", { name: "default" });
 
@@ -59,22 +57,14 @@ describe("ArgoAppProjectsTabContent", () => {
   });
 
   it("renders description fallback", () => {
-    render(
-      <MemoryRouter>
-        <ArgoAppProjectsTabContent />
-      </MemoryRouter>,
-    );
+    render(<ArgoAppProjectsTabContent />);
 
     expect(screen.getByText("Default project")).toBeInTheDocument();
     expect(screen.getByText("N/A")).toBeInTheDocument();
   });
 
   it("renders destinations and sync-window signal columns with fallbacks", () => {
-    render(
-      <MemoryRouter>
-        <ArgoAppProjectsTabContent />
-      </MemoryRouter>,
-    );
+    render(<ArgoAppProjectsTabContent />);
 
     expect(screen.getByText("2")).toBeInTheDocument();
     expect(screen.getByText("1")).toBeInTheDocument();

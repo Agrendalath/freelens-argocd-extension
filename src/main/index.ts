@@ -1,7 +1,7 @@
 import { Main } from "@freelensapp/extensions";
 import { ArgoPreferencesStore } from "../common/store";
 import { ensureArgoResourceTemplates } from "./argo-resource-templates";
-import { registerArgoCdApiIpc, unregisterArgoCdApiIpc } from "./argocd-api-ipc";
+import { registerArgoCdApiIpc } from "./argocd-api-ipc";
 
 export default class ArgoExtensionMain extends Main.LensExtension {
   async onActivate() {
@@ -9,9 +9,5 @@ export default class ArgoExtensionMain extends Main.LensExtension {
     registerArgoCdApiIpc(this);
     await ArgoPreferencesStore.getInstanceOrCreate().loadExtension(this);
     await ensureArgoResourceTemplates();
-  }
-
-  onDeactivate() {
-    unregisterArgoCdApiIpc();
   }
 }

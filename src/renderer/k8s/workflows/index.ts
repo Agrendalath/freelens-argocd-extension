@@ -19,6 +19,9 @@ export class ArgoWorkflow extends Renderer.K8sApi.LensExtensionKubeObject<
   WorkflowStatus,
   WorkflowSpec
 > {
+  declare kind: "Workflow";
+  declare apiVersion: "argoproj.io/v1alpha1";
+
   static readonly kind = "Workflow";
   static readonly namespaced = true;
   static readonly apiBase = "/apis/argoproj.io/v1alpha1/workflows";
@@ -37,6 +40,9 @@ export class ArgoCronWorkflow extends Renderer.K8sApi.LensExtensionKubeObject<
   CronWorkflowStatus,
   CronWorkflowSpec
 > {
+  declare kind: "CronWorkflow";
+  declare apiVersion: "argoproj.io/v1alpha1";
+
   static readonly kind = "CronWorkflow";
   static readonly namespaced = true;
   static readonly apiBase = "/apis/argoproj.io/v1alpha1/cronworkflows";
@@ -55,6 +61,9 @@ export class ArgoWorkflowTemplate extends Renderer.K8sApi.LensExtensionKubeObjec
   Record<string, never>,
   WorkflowTemplateSpec
 > {
+  declare kind: "WorkflowTemplate";
+  declare apiVersion: "argoproj.io/v1alpha1";
+
   static readonly kind = "WorkflowTemplate";
   static readonly namespaced = true;
   static readonly apiBase = "/apis/argoproj.io/v1alpha1/workflowtemplates";
@@ -73,6 +82,9 @@ export class ArgoClusterWorkflowTemplate extends Renderer.K8sApi.LensExtensionKu
   Record<string, never>,
   ClusterWorkflowTemplateSpec
 > {
+  declare kind: "ClusterWorkflowTemplate";
+  declare apiVersion: "argoproj.io/v1alpha1";
+
   static readonly kind = "ClusterWorkflowTemplate";
   static readonly namespaced = false;
   static readonly apiBase = "/apis/argoproj.io/v1alpha1/clusterworkflowtemplates";

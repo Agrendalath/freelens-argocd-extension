@@ -1,6 +1,5 @@
 import { Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
-import { withErrorPage } from "../components/error-page";
 import { type ArgoClusterWorkflowTemplate, getWorkflowArgumentsOverview } from "../k8s/workflows";
 
 const {
@@ -12,19 +11,17 @@ export interface ArgoClusterWorkflowTemplateDetailsProps
   extension: Renderer.LensExtension;
 }
 
-export const ArgoClusterWorkflowTemplateDetails = observer((props: ArgoClusterWorkflowTemplateDetailsProps) =>
-  withErrorPage(props, () => {
-    const { object } = props;
+export const ArgoClusterWorkflowTemplateDetails = observer((props: ArgoClusterWorkflowTemplateDetailsProps) => {
+  const { object } = props;
 
-    return (
-      <>
-        <DrawerTitle>ClusterWorkflowTemplate</DrawerTitle>
-        <DrawerItem name="Entrypoint">{object.spec?.entrypoint ?? "N/A"}</DrawerItem>
-        <DrawerItem name="Templates">{String(object.spec?.templates?.length ?? 0)}</DrawerItem>
-        <DrawerItem name="Arguments">{getWorkflowArgumentsOverview(object.spec)}</DrawerItem>
-        <DrawerItem name="Service Account">{object.spec?.serviceAccountName ?? "N/A"}</DrawerItem>
-        <DrawerItem name="Pod GC">{object.spec?.podGC?.strategy ?? "N/A"}</DrawerItem>
-      </>
-    );
-  }),
-);
+  return (
+    <>
+      <DrawerTitle>ClusterWorkflowTemplate</DrawerTitle>
+      <DrawerItem name="Entrypoint">{object.spec?.entrypoint ?? "N/A"}</DrawerItem>
+      <DrawerItem name="Templates">{String(object.spec?.templates?.length ?? 0)}</DrawerItem>
+      <DrawerItem name="Arguments">{getWorkflowArgumentsOverview(object.spec)}</DrawerItem>
+      <DrawerItem name="Service Account">{object.spec?.serviceAccountName ?? "N/A"}</DrawerItem>
+      <DrawerItem name="Pod GC">{object.spec?.podGC?.strategy ?? "N/A"}</DrawerItem>
+    </>
+  );
+});

@@ -3,9 +3,7 @@ import { observer } from "mobx-react";
 import { useEffect, useRef, useState } from "react";
 import { type ArgoRollout, getArgoRolloutStore } from "../../k8s/rollouts";
 import styles from "../argo-overview-page.module.scss";
-import stylesInline from "../argo-overview-page.module.scss?inline";
 import chartStyles from "./rollouts-overview-page.module.scss";
-import chartStylesInline from "./rollouts-overview-page.module.scss?inline";
 
 const {
   Component: { NamespaceSelectFilter, PieChart },
@@ -118,46 +116,42 @@ export const ArgoRolloutsOverviewTabContent = observer(() => {
   };
 
   return (
-    <>
-      <style>{stylesInline}</style>
-      <style>{chartStylesInline}</style>
-      <div className={styles.root}>
-        <div className={styles.header}>
-          <h5 className={styles.title}>Argo Rollouts Overview</h5>
-          <div className={styles.namespaceFilter}>
-            <NamespaceSelectFilter id="rollouts-overview-namespace-select-filter-input" />
-          </div>
+    <div className={styles.root}>
+      <div className={styles.header}>
+        <h5 className={styles.title}>Argo Rollouts Overview</h5>
+        <div className={styles.namespaceFilter}>
+          <NamespaceSelectFilter id="rollouts-overview-namespace-select-filter-input" />
         </div>
+      </div>
 
-        <div className={styles.scrollBody}>
-          {!isLoaded ? <div className={styles.loadingMessage}>Loading Argo Rollouts resources...</div> : null}
-          {loadError ? <div className={styles.errorMessage}>{loadError}</div> : null}
-          <div className={styles.statuses}>
-            <div className={styles.chartsRow}>
-              <div
-                ref={chartContainerRef}
-                className={`${chartStyles.chartContainer} ${phasesToBeShown.length === 0 ? "" : "ArgoRolloutsPhaseChart"}`}
-              >
-                <h6 className={chartStyles.title}>Rollout Phase Distribution</h6>
-                {phasesToBeShown.length === 0 ? (
-                  <div className={chartStyles.noData}>{isLoaded ? "No Rollouts found" : "Loading Rollouts..."}</div>
-                ) : (
-                  <div className={chartStyles.chart}>
-                    <PieChart
-                      data={chartData}
-                      options={chartOptions}
-                      height={300}
-                      showLegend={true}
-                      legendPosition="bottom"
-                    />
-                  </div>
-                )}
-              </div>
+      <div className={styles.scrollBody}>
+        {!isLoaded ? <div className={styles.loadingMessage}>Loading Argo Rollouts resources...</div> : null}
+        {loadError ? <div className={styles.errorMessage}>{loadError}</div> : null}
+        <div className={styles.statuses}>
+          <div className={styles.chartsRow}>
+            <div
+              ref={chartContainerRef}
+              className={`${chartStyles.chartContainer} ${phasesToBeShown.length === 0 ? "" : "ArgoRolloutsPhaseChart"}`}
+            >
+              <h6 className={chartStyles.title}>Rollout Phase Distribution</h6>
+              {phasesToBeShown.length === 0 ? (
+                <div className={chartStyles.noData}>{isLoaded ? "No Rollouts found" : "Loading Rollouts..."}</div>
+              ) : (
+                <div className={chartStyles.chart}>
+                  <PieChart
+                    data={chartData}
+                    options={chartOptions}
+                    height={300}
+                    showLegend={true}
+                    legendPosition="bottom"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 });
 

@@ -1,4 +1,16 @@
+// Minimal stub of `@freelensapp/extensions` for unit tests.
+//
+// The published package is a shim that reads `Common`, `Main` and `Renderer`
+// off `globalThis.FreelensExtensionApi`, which the Freelens host sets before it
+// loads an extension. A Vitest process has no host, so importing the real
+// package throws. `vitest.config.ts` aliases the import to this file instead.
+// The package ships no mocks of its own to use in its place.
+//
+// Only the surface the tests exercise is stubbed here, and only at runtime: the
+// tests are type-checked against the real declaration of the package. Extend it
+// as the tests need more of the host API.
 import React from "react";
+import { vi } from "vitest";
 
 type AnyRecord = Record<string, any>;
 
@@ -31,8 +43,8 @@ const KubeObjectListLayout = ({ store, items, renderTableContents }: AnyRecord) 
   );
 };
 
-// Jest-callable components we want to introspect in tests if needed
-export const PieChart = jest.fn(({ data }: AnyRecord) => (
+// Callable components we want to introspect in tests if needed
+export const PieChart = vi.fn(({ data }: AnyRecord) => (
   <div data-testid="PieChart" data-labels={JSON.stringify(data?.labels ?? [])}>
     PieChart
   </div>
@@ -51,7 +63,7 @@ export const Renderer = {
     Tabs: ({ children, onChange }: AnyRecord) => (
       <div data-testid="Tabs">
         {React.Children.map(children, (child) =>
-          React.isValidElement(child) ? React.cloneElement(child, { onSelect: onChange }) : child,
+          React.isValidElement(child) ? React.cloneElement(child, { onSelect: onChange } as AnyRecord) : child,
         )}
       </div>
     ),
@@ -79,15 +91,19 @@ export const Renderer = {
       </div>
     ),
     TableCell: passthrough("TableCell"),
-    TableOrderBy: undefined as any,
 
-    // list page (not currently tested, but harmless to include)
+    // list page
     KubeObjectAge: passthrough("KubeObjectAge"),
     KubeObjectListLayout,
     WithTooltip: ({ children, tooltip }: AnyRecord) => (
       <div data-testid="WithTooltip" data-tooltip={tooltip}>
         {children}
       </div>
+    ),
+    MaybeLink: ({ to, children, ...rest }: AnyRecord) => (
+      <a data-testid="MaybeLink" href={typeof to === "string" ? to : (to?.pathname ?? "")} {...rest}>
+        {children}
+      </a>
     ),
 
     // dialog & inputs
@@ -118,11 +134,11 @@ export const Renderer = {
       </label>
     ),
     Notifications: {
-      ok: jest.fn(),
-      error: jest.fn(),
+      ok: vi.fn(),
+      error: vi.fn(),
     },
     ConfirmDialog: {
-      confirm: jest.fn(async () => true),
+      confirm: vi.fn(async () => true),
     },
 
     // menu
@@ -152,34 +168,65 @@ export const Renderer = {
       contextItems: [],
       loadAll: async () => {},
       subscribe: () => noop,
-      create: jest.fn(),
-      patch: jest.fn(),
-      remove: jest.fn(),
+      create: vi.fn(),
+      patch: vi.fn(),
+      remove: vi.fn(),
     },
     secretsStore: {
       items: [],
       contextItems: [],
       loadAll: async () => {},
       subscribe: () => noop,
-      create: jest.fn(),
-      patch: jest.fn(),
-      remove: jest.fn(),
+      create: vi.fn(),
+      patch: vi.fn(),
+      remove: vi.fn(),
     },
     KubeObjectMetadata: class {},
     LensExtensionKubeObject: class {},
     KubeApi: class {},
     KubeObjectStore: class {},
+    Secret: class Secret {
+      static readonly kind = "Secret";
+      static readonly apiBase = "/api/v1/secrets";
+    },
+    ConfigMap: class ConfigMap {
+      static readonly kind = "ConfigMap";
+      static readonly apiBase = "/api/v1/configmaps";
+    },
+    // The host's helpers take `kind` from the class and `apiVersions` from its
+    // `crd.apiVersions`, or the group and version of its `apiBase`, and nest
+    // the component under `components`.
+    detailsFor: (model: any, registration: AnyRecord) => {
+      const { Details, ...rest } = registration;
+      return {
+        kind: model?.kind,
+        apiVersions: model?.crd?.apiVersions ?? [model?.apiBase?.split("/")[2]].filter(Boolean),
+        components: { Details },
+        ...rest,
+      };
+    },
+    menuItemFor: (model: any, registration: AnyRecord) => {
+      const { MenuItem, ...rest } = registration;
+      return {
+        kind: model?.kind,
+        apiVersions: model?.crd?.apiVersions ?? [model?.apiBase?.split("/")[2]].filter(Boolean),
+        components: { MenuItem },
+        ...rest,
+      };
+    },
   },
 
   Navigation: {
     getDetailsUrl: (url: string) => url,
+    getMaybeDetailsUrl: (url?: string) => url ?? "",
   },
 
   Ipc: class {
     constructor(_extension: any) {}
-    invoke = jest.fn(async () => ({ status: 200, bodyText: "{}" }));
-    listen = jest.fn(() => noop);
-    handle = jest.fn();
+    invoke = vi.fn(async () => ({ status: 200, bodyText: "{}" }));
+    listen = vi.fn(() => noop);
+    handle = vi.fn();
+    broadcast = vi.fn();
   },
 } as const;
 
@@ -187,15 +234,19 @@ export const Main = {
   LensExtension: class {},
   Ipc: class {
     constructor(_extension: any) {}
-    invoke = jest.fn(async () => ({ status: 200, bodyText: "{}" }));
-    listen = jest.fn(() => noop);
-    handle = jest.fn();
+    invoke = vi.fn(async () => ({ status: 200, bodyText: "{}" }));
+    listen = vi.fn(() => noop);
+    handle = vi.fn();
+    broadcast = vi.fn();
   },
 } as const;
 
 export const Common = {
   logger: {
-    error: noop,
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
   },
   Util: {
     stopPropagation: noop,

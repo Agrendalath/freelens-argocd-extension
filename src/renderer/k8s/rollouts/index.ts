@@ -18,6 +18,9 @@ export class ArgoRollout extends Renderer.K8sApi.LensExtensionKubeObject<
   RolloutStatus,
   RolloutSpec
 > {
+  declare kind: "Rollout";
+  declare apiVersion: "argoproj.io/v1alpha1";
+
   static readonly kind = "Rollout";
   static readonly namespaced = true;
   static readonly apiBase = "/apis/argoproj.io/v1alpha1/rollouts";

@@ -40,6 +40,9 @@ export class ArgoExperiment extends Renderer.K8sApi.LensExtensionKubeObject<
   ExperimentStatus,
   ExperimentSpec
 > {
+  declare kind: "Experiment";
+  declare apiVersion: "argoproj.io/v1alpha1";
+
   static readonly kind = "Experiment";
   static readonly namespaced = true;
   static readonly apiBase = "/apis/argoproj.io/v1alpha1/experiments";

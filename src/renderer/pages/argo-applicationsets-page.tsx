@@ -1,10 +1,8 @@
 import { Common, Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
-import { Link } from "react-router-dom";
 import { getArgoCdApiClient, getArgoCdDataSource, getArgoPreferences, useArgoCdApiQuery } from "../argocd-api";
 import { ArgoApiListToolbar, useArgoApiListFilters } from "../components/argo-api-list";
 import { ArgoCdApiMisconfiguredNotice, ArgoConnectionSourceBanner } from "../components/argo-connection-source";
-import { withErrorPage } from "../components/error-page";
 import {
   ArgoApplicationSet,
   type ArgoApplicationSetApi,
@@ -14,12 +12,10 @@ import {
   getGeneratedApplicationCount,
 } from "../k8s/argocd";
 import apiListStyles from "./argo-api-list.module.scss";
-import apiListStylesInline from "./argo-api-list.module.scss?inline";
 import styles from "./argo-applicationsets-page.module.scss";
-import stylesInline from "./argo-applicationsets-page.module.scss?inline";
 
 const {
-  Component: { KubeObjectAge, KubeObjectListLayout, Table, TableCell, TableHead, TableRow, WithTooltip },
+  Component: { KubeObjectAge, KubeObjectListLayout, MaybeLink, Table, TableCell, TableHead, TableRow, WithTooltip },
   K8sApi: { namespacesApi },
   Navigation: { getDetailsUrl },
 } = Renderer;
@@ -83,35 +79,32 @@ const ArgoApplicationSetsClusterTabContent = observer(() => {
     );
 
   return (
-    <>
-      <style>{stylesInline}</style>
-      <KubeObjectListLayout<ArgoApplicationSet, ArgoApplicationSetApi>
-        tableId={`${ArgoApplicationSet.crd.plural}Table`}
-        isConfigurable
-        className={styles.page}
-        store={applicationSetStore}
-        sortingCallbacks={sortingCallbacks}
-        searchFilters={[(object: ArgoApplicationSet) => object.getSearchFields()]}
-        renderHeaderTitle={ArgoApplicationSet.crd.title}
-        renderTableHeader={renderTableHeader}
-        renderTableContents={(object: ArgoApplicationSet) => [
-          <Link key="name-link" to={getApplicationSetDetailsUrl(object)} onClick={stopPropagation}>
-            <WithTooltip>{object.getName()}</WithTooltip>
-          </Link>,
-          <Link
-            key="namespace-link"
-            to={getDetailsUrl(namespacesApi.formatUrlForNotListing({ name: object.getNs() }))}
-            onClick={stopPropagation}
-          >
-            <WithTooltip>{object.getNs()}</WithTooltip>
-          </Link>,
-          <WithTooltip>{String(getGeneratedApplicationCount(object))}</WithTooltip>,
-          <WithTooltip>{formatBooleanSignal(getApplicationSetResourcesUpToDate(object))}</WithTooltip>,
-          <WithTooltip>{formatBooleanSignal(getApplicationSetHasError(object))}</WithTooltip>,
-          <KubeObjectAge object={object} key="age" />,
-        ]}
-      />
-    </>
+    <KubeObjectListLayout<ArgoApplicationSet, ArgoApplicationSetApi>
+      tableId={`${ArgoApplicationSet.crd.plural}Table`}
+      isConfigurable
+      className={styles.page}
+      store={applicationSetStore}
+      sortingCallbacks={sortingCallbacks}
+      searchFilters={[(object: ArgoApplicationSet) => object.getSearchFields()]}
+      renderHeaderTitle={ArgoApplicationSet.crd.title}
+      renderTableHeader={renderTableHeader}
+      renderTableContents={(object: ArgoApplicationSet) => [
+        <MaybeLink key="name-link" to={getApplicationSetDetailsUrl(object)} onClick={stopPropagation}>
+          <WithTooltip>{object.getName()}</WithTooltip>
+        </MaybeLink>,
+        <MaybeLink
+          key="namespace-link"
+          to={getDetailsUrl(namespacesApi.formatUrlForNotListing({ name: object.getNs() }))}
+          onClick={stopPropagation}
+        >
+          <WithTooltip>{object.getNs()}</WithTooltip>
+        </MaybeLink>,
+        <WithTooltip>{String(getGeneratedApplicationCount(object))}</WithTooltip>,
+        <WithTooltip>{formatBooleanSignal(getApplicationSetResourcesUpToDate(object))}</WithTooltip>,
+        <WithTooltip>{formatBooleanSignal(getApplicationSetHasError(object))}</WithTooltip>,
+        <KubeObjectAge object={object} key="age" />,
+      ]}
+    />
   );
 });
 
@@ -127,71 +120,67 @@ const ArgoApplicationSetsApiTabContent = observer(() => {
     useArgoApiListFilters(applicationSets);
 
   return (
-    <>
-      <style>{stylesInline}</style>
-      <style>{apiListStylesInline}</style>
-      <div className={apiListStyles.root}>
-        <ArgoConnectionSourceBanner />
-        {isLoading ? <div className={apiListStyles.loading}>Loading ApplicationSets from Argo CD API...</div> : null}
-        {error ? <div className={apiListStyles.error}>{error}</div> : null}
-        {!isLoading && !error && applicationSets.length === 0 ? (
-          <div className={apiListStyles.empty}>No ApplicationSets</div>
-        ) : null}
-        {!isLoading && !error && applicationSets.length > 0 ? (
-          <div className={apiListStyles.page}>
-            <ArgoApiListToolbar
-              title="Argo ApplicationSets"
-              search={search}
-              onSearchChange={setSearch}
-              namespace={namespace}
-              onNamespaceChange={setNamespace}
-              namespaces={namespaces}
-              filteredCount={filteredCount}
-              totalCount={totalCount}
-              searchPlaceholder="Search ApplicationSets..."
-            />
-            {filteredItems.length === 0 ? (
-              <div className={apiListStyles.empty}>No ApplicationSets match the current filters</div>
-            ) : (
-              <div className={apiListStyles.tableWrap}>
-                <Table tableId="argocdApiApplicationSets" scrollable={false} sortSyncWithUrl={false}>
-                  <TableHead flat sticky>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Namespace</TableCell>
-                    <TableCell>Applications</TableCell>
-                    <TableCell>Up To Date</TableCell>
-                    <TableCell>Error</TableCell>
-                    <TableCell>Age</TableCell>
-                  </TableHead>
-                  {filteredItems.map((object) => (
-                    <TableRow key={`${object.getNs()}/${object.getName()}`}>
-                      <TableCell>
-                        <WithTooltip>{object.getName()}</WithTooltip>
-                      </TableCell>
-                      <TableCell>
-                        <WithTooltip>{object.getNs() || "N/A"}</WithTooltip>
-                      </TableCell>
-                      <TableCell>
-                        <WithTooltip>{String(getGeneratedApplicationCount(object))}</WithTooltip>
-                      </TableCell>
-                      <TableCell>
-                        <WithTooltip>{formatBooleanSignal(getApplicationSetResourcesUpToDate(object))}</WithTooltip>
-                      </TableCell>
-                      <TableCell>
-                        <WithTooltip>{formatBooleanSignal(getApplicationSetHasError(object))}</WithTooltip>
-                      </TableCell>
-                      <TableCell>
-                        <KubeObjectAge object={object} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </Table>
-              </div>
-            )}
-          </div>
-        ) : null}
-      </div>
-    </>
+    <div className={apiListStyles.root}>
+      <ArgoConnectionSourceBanner />
+      {isLoading ? <div className={apiListStyles.loading}>Loading ApplicationSets from Argo CD API...</div> : null}
+      {error ? <div className={apiListStyles.error}>{error}</div> : null}
+      {!isLoading && !error && applicationSets.length === 0 ? (
+        <div className={apiListStyles.empty}>No ApplicationSets</div>
+      ) : null}
+      {!isLoading && !error && applicationSets.length > 0 ? (
+        <div className={apiListStyles.page}>
+          <ArgoApiListToolbar
+            title="Argo ApplicationSets"
+            search={search}
+            onSearchChange={setSearch}
+            namespace={namespace}
+            onNamespaceChange={setNamespace}
+            namespaces={namespaces}
+            filteredCount={filteredCount}
+            totalCount={totalCount}
+            searchPlaceholder="Search ApplicationSets..."
+          />
+          {filteredItems.length === 0 ? (
+            <div className={apiListStyles.empty}>No ApplicationSets match the current filters</div>
+          ) : (
+            <div className={apiListStyles.tableWrap}>
+              <Table tableId="argocdApiApplicationSets" scrollable={false} sortSyncWithUrl={false}>
+                <TableHead flat sticky>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Namespace</TableCell>
+                  <TableCell>Applications</TableCell>
+                  <TableCell>Up To Date</TableCell>
+                  <TableCell>Error</TableCell>
+                  <TableCell>Age</TableCell>
+                </TableHead>
+                {filteredItems.map((object) => (
+                  <TableRow key={`${object.getNs()}/${object.getName()}`}>
+                    <TableCell>
+                      <WithTooltip>{object.getName()}</WithTooltip>
+                    </TableCell>
+                    <TableCell>
+                      <WithTooltip>{object.getNs() || "N/A"}</WithTooltip>
+                    </TableCell>
+                    <TableCell>
+                      <WithTooltip>{String(getGeneratedApplicationCount(object))}</WithTooltip>
+                    </TableCell>
+                    <TableCell>
+                      <WithTooltip>{formatBooleanSignal(getApplicationSetResourcesUpToDate(object))}</WithTooltip>
+                    </TableCell>
+                    <TableCell>
+                      <WithTooltip>{formatBooleanSignal(getApplicationSetHasError(object))}</WithTooltip>
+                    </TableCell>
+                    <TableCell>
+                      <KubeObjectAge object={object} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </Table>
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
   );
 });
 
@@ -206,12 +195,10 @@ export const ArgoApplicationSetsTabContent = observer(() => {
   return <ArgoApplicationSetsClusterTabContent />;
 });
 
-export const ArgoApplicationSetsPage = observer((props: ArgoApplicationSetsPageProps) =>
-  withErrorPage(props, () => {
-    return (
-      <>
-        <ArgoApplicationSetsTabContent />
-      </>
-    );
-  }),
-);
+export const ArgoApplicationSetsPage = observer((props: ArgoApplicationSetsPageProps) => {
+  return (
+    <>
+      <ArgoApplicationSetsTabContent />
+    </>
+  );
+});

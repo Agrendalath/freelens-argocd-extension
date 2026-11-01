@@ -1,5 +1,7 @@
+// @vitest-environment jsdom
+
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { describe, expect, it, vi } from "vitest";
 import { ArgoApplicationSetsTabContent } from "../argo-applicationsets-page";
 
 const mockItems = [
@@ -26,7 +28,7 @@ const mockStore = {
   },
 };
 
-jest.mock("../../k8s/argocd", () => ({
+vi.mock("../../k8s/argocd", () => ({
   ArgoApplicationSet: {
     crd: {
       plural: "applicationsets",
@@ -71,11 +73,7 @@ jest.mock("../../k8s/argocd", () => ({
 
 describe("ArgoApplicationSetsTabContent", () => {
   it("links applicationset name to details", () => {
-    render(
-      <MemoryRouter>
-        <ArgoApplicationSetsTabContent />
-      </MemoryRouter>,
-    );
+    render(<ArgoApplicationSetsTabContent />);
 
     const nameLink = screen.getByRole("link", { name: "demo-appset" });
 
@@ -86,11 +84,7 @@ describe("ArgoApplicationSetsTabContent", () => {
   });
 
   it("renders applicationset signal columns", () => {
-    render(
-      <MemoryRouter>
-        <ArgoApplicationSetsTabContent />
-      </MemoryRouter>,
-    );
+    render(<ArgoApplicationSetsTabContent />);
 
     expect(screen.getByRole("link", { name: "argocd" })).toHaveAttribute("href", "/api/v1/namespaces/argocd");
     expect(screen.getByText("2")).toBeInTheDocument();
@@ -103,11 +97,7 @@ describe("ArgoApplicationSetsTabContent", () => {
     const originalStatus = item.status;
     item.status = {};
 
-    render(
-      <MemoryRouter>
-        <ArgoApplicationSetsTabContent />
-      </MemoryRouter>,
-    );
+    render(<ArgoApplicationSetsTabContent />);
 
     expect(screen.getByText("0")).toBeInTheDocument();
     expect(screen.getAllByText("N/A").length).toBeGreaterThanOrEqual(2);

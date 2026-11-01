@@ -1,4 +1,4 @@
-import { Renderer } from "@freelensapp/extensions";
+import { Common, Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
 import { argoConfigDialogStore } from "../components/argo-config";
 import { isArgoSecret, isEditableArgoConfigMap } from "../k8s/argocd";
@@ -7,7 +7,7 @@ const {
   Component: { Icon, MenuItem },
 } = Renderer;
 
-export interface ArgoConfigMenuItemProps extends Renderer.Component.KubeObjectMenuProps<any> {
+export interface ArgoConfigMenuItemProps extends Common.Types.KubeObjectMenuItemProps<any> {
   extension: Renderer.LensExtension;
 }
 

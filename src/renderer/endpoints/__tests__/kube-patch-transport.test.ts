@@ -1,3 +1,4 @@
+import { describe, expect, it, vi } from "vitest";
 import { isKubeNotFoundError, patchStatusSubresource } from "../kube-patch-transport";
 
 const resourceApiUrl = "/apis/argoproj.io/v1alpha1/namespaces/ns/rollouts/demo";
@@ -41,10 +42,10 @@ describe("isKubeNotFoundError", () => {
 
 describe("patchStatusSubresource", () => {
   it("patches /status with merge-patch content type and returns true", async () => {
-    const requestPatch = jest.fn().mockResolvedValue({});
+    const requestPatch = vi.fn().mockResolvedValue({});
     const store = {
       api: {
-        formatUrlForNotListing: jest.fn(() => resourceApiUrl),
+        formatUrlForNotListing: vi.fn(() => resourceApiUrl),
         request: { patch: requestPatch },
       },
     };
@@ -79,7 +80,7 @@ describe("patchStatusSubresource", () => {
   it("returns false when formatUrlForNotListing is missing", async () => {
     const store = {
       api: {
-        request: { patch: jest.fn() },
+        request: { patch: vi.fn() },
       },
     };
 
@@ -87,7 +88,7 @@ describe("patchStatusSubresource", () => {
   });
 
   it("returns false when object name is empty", async () => {
-    const requestPatch = jest.fn();
+    const requestPatch = vi.fn();
     const store = {
       api: {
         formatUrlForNotListing: () => resourceApiUrl,
@@ -100,7 +101,7 @@ describe("patchStatusSubresource", () => {
   });
 
   it("returns false when getName is missing", async () => {
-    const requestPatch = jest.fn();
+    const requestPatch = vi.fn();
     const store = {
       api: {
         formatUrlForNotListing: () => resourceApiUrl,
@@ -114,8 +115,8 @@ describe("patchStatusSubresource", () => {
   });
 
   it("uses empty namespace string when getNs returns undefined", async () => {
-    const requestPatch = jest.fn().mockResolvedValue({});
-    const formatUrlForNotListing = jest.fn(() => resourceApiUrl);
+    const requestPatch = vi.fn().mockResolvedValue({});
+    const formatUrlForNotListing = vi.fn(() => resourceApiUrl);
     const store = {
       api: {
         formatUrlForNotListing,
@@ -138,7 +139,7 @@ describe("patchStatusSubresource", () => {
     const store = {
       api: {
         formatUrlForNotListing: () => resourceApiUrl,
-        request: { patch: jest.fn().mockRejectedValueOnce(error) },
+        request: { patch: vi.fn().mockRejectedValueOnce(error) },
       },
     };
 
@@ -150,7 +151,7 @@ describe("patchStatusSubresource", () => {
     const store = {
       api: {
         formatUrlForNotListing: () => resourceApiUrl,
-        request: { patch: jest.fn().mockRejectedValueOnce(error) },
+        request: { patch: vi.fn().mockRejectedValueOnce(error) },
       },
     };
 

@@ -18,6 +18,9 @@ export class ArgoApplication extends Renderer.K8sApi.LensExtensionKubeObject<
   ApplicationStatus,
   ApplicationSpec
 > {
+  declare kind: "Application";
+  declare apiVersion: "argoproj.io/v1alpha1";
+
   static readonly kind = "Application";
   static readonly namespaced = true;
   static readonly apiBase = "/apis/argoproj.io/v1alpha1/applications";

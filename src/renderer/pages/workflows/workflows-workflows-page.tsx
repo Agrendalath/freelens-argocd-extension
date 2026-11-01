@@ -1,7 +1,5 @@
 import { Common, Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
-import { Link } from "react-router-dom";
-import { withErrorPage } from "../../components/error-page";
 import {
   ArgoWorkflow,
   type ArgoWorkflowApi,
@@ -13,7 +11,7 @@ import {
 } from "../../k8s/workflows";
 
 const {
-  Component: { KubeObjectAge, KubeObjectListLayout, WithTooltip },
+  Component: { KubeObjectAge, KubeObjectListLayout, MaybeLink, WithTooltip },
   K8sApi: { namespacesApi },
   Navigation: { getDetailsUrl },
 } = Renderer;
@@ -64,16 +62,16 @@ export const ArgoWorkflowsTabContent = observer(() => {
       renderHeaderTitle={ArgoWorkflow.crd.title}
       renderTableHeader={renderTableHeader}
       renderTableContents={(object: ArgoWorkflow) => [
-        <Link key="name-link" to={getWorkflowDetailsUrl(object)} onClick={stopPropagation}>
+        <MaybeLink key="name-link" to={getWorkflowDetailsUrl(object)} onClick={stopPropagation}>
           <WithTooltip>{object.getName()}</WithTooltip>
-        </Link>,
-        <Link
+        </MaybeLink>,
+        <MaybeLink
           key="namespace-link"
           to={getDetailsUrl(namespacesApi.formatUrlForNotListing({ name: object.getNs() }))}
           onClick={stopPropagation}
         >
           <WithTooltip>{object.getNs()}</WithTooltip>
-        </Link>,
+        </MaybeLink>,
         <WithTooltip>{getWorkflowPhase(object)}</WithTooltip>,
         <WithTooltip>{getArgoWorkflowProgress(object)}</WithTooltip>,
         <WithTooltip>{getArgoWorkflowDuration(object)}</WithTooltip>,
@@ -88,6 +86,6 @@ export interface ArgoWorkflowsWorkflowsPageProps {
   extension: Renderer.LensExtension;
 }
 
-export const ArgoWorkflowsWorkflowsPage = observer((props: ArgoWorkflowsWorkflowsPageProps) =>
-  withErrorPage(props, () => <ArgoWorkflowsTabContent />),
-);
+export const ArgoWorkflowsWorkflowsPage = observer((props: ArgoWorkflowsWorkflowsPageProps) => {
+  return <ArgoWorkflowsTabContent />;
+});

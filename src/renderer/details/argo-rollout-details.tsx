@@ -1,8 +1,6 @@
 import { Renderer } from "@freelensapp/extensions";
 import { observer } from "mobx-react";
 import { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
-import { withErrorPage } from "../components/error-page";
 import { ConditionsList, ResourceEventsSection, StatusBadge } from "../components/shared";
 import { abortRollout, requestRolloutPromotion, retryRollout } from "../endpoints/argo-rollout-endpoints";
 import {
@@ -28,7 +26,7 @@ import { getAbortRolloutConfirmCopy, runGuardedArgoMutation } from "../mutations
 import { formatOptionalValue } from "../utils";
 
 const {
-  Component: { Button, DrawerItem, DrawerTitle, Gutter, WithTooltip },
+  Component: { Button, DrawerItem, DrawerTitle, Gutter, MaybeLink, WithTooltip },
   Navigation: { getDetailsUrl },
 } = Renderer;
 
@@ -67,189 +65,187 @@ export const ArgoRolloutDetails = observer((props: ArgoRolloutDetailsProps) => {
     };
   }, [analysisRunStore, rolloutNamespace]);
 
-  return withErrorPage(props, () => {
-    const spec = object.spec;
-    const status = object.status;
-    const rolloutStore = getArgoRolloutStore();
+  const spec = object.spec;
+  const status = object.status;
+  const rolloutStore = getArgoRolloutStore();
 
-    const paused =
-      spec?.paused === true || (status?.pauseConditions?.length ?? 0) > 0 || status?.controllerPause === true;
-    const derivedState = deriveRolloutState(object);
-    const rolloutStateLabel = getRolloutStateLabel(object);
-    const rolloutStateReason = getRolloutStateReason(object);
-    const showPromoteAction = derivedState === "paused_promotable";
-    const showPromoteFullAction = canShowPromoteFullAction(object);
-    const showPromoteSkipCurrent = canShowPromoteSkipCurrentStepAction(object);
-    const showPromoteSkipAll = canShowPromoteSkipAllStepsAction(object);
-    const showAbortAction = canAbortRollout(object);
-    const showRetryAction = canRetryRollout(object);
-    const blueGreenState = getBlueGreenPromotionState(object);
-    const isBlueGreen = blueGreenState !== "not_bluegreen";
-    const analysisRuns = getAnalysisRunsForRollout(object, (analysisRunStore.items as ArgoAnalysisRun[]) ?? []);
+  const paused =
+    spec?.paused === true || (status?.pauseConditions?.length ?? 0) > 0 || status?.controllerPause === true;
+  const derivedState = deriveRolloutState(object);
+  const rolloutStateLabel = getRolloutStateLabel(object);
+  const rolloutStateReason = getRolloutStateReason(object);
+  const showPromoteAction = derivedState === "paused_promotable";
+  const showPromoteFullAction = canShowPromoteFullAction(object);
+  const showPromoteSkipCurrent = canShowPromoteSkipCurrentStepAction(object);
+  const showPromoteSkipAll = canShowPromoteSkipAllStepsAction(object);
+  const showAbortAction = canAbortRollout(object);
+  const showRetryAction = canRetryRollout(object);
+  const blueGreenState = getBlueGreenPromotionState(object);
+  const isBlueGreen = blueGreenState !== "not_bluegreen";
+  const analysisRuns = getAnalysisRunsForRollout(object, (analysisRunStore.items as ArgoAnalysisRun[]) ?? []);
 
-    const rolloutDisplayName = object.getName?.() ?? object.metadata?.name ?? "rollout";
+  const rolloutDisplayName = object.getName?.() ?? object.metadata?.name ?? "rollout";
 
-    const promoteRollout = async () => {
-      await runGuardedArgoMutation({
-        risk: "low",
-        actionLabel: "Promote",
-        resourceName: rolloutDisplayName,
-        run: () => requestRolloutPromotion(rolloutStore, object, {}),
-        successMessage: `Promote requested for ${rolloutDisplayName}`,
-        failureFallback: "Failed to promote rollout.",
-      });
-    };
+  const promoteRollout = async () => {
+    await runGuardedArgoMutation({
+      risk: "low",
+      actionLabel: "Promote",
+      resourceName: rolloutDisplayName,
+      run: () => requestRolloutPromotion(rolloutStore, object, {}),
+      successMessage: `Promote requested for ${rolloutDisplayName}`,
+      failureFallback: "Failed to promote rollout.",
+    });
+  };
 
-    const promoteFullRollout = async () => {
-      await runGuardedArgoMutation({
-        risk: "low",
-        actionLabel: "Promote Full",
-        resourceName: rolloutDisplayName,
-        run: () => requestRolloutPromotion(rolloutStore, object, { full: true }),
-        successMessage: `Full promote requested for ${rolloutDisplayName}`,
-        failureFallback: "Failed to fully promote rollout.",
-      });
-    };
+  const promoteFullRollout = async () => {
+    await runGuardedArgoMutation({
+      risk: "low",
+      actionLabel: "Promote Full",
+      resourceName: rolloutDisplayName,
+      run: () => requestRolloutPromotion(rolloutStore, object, { full: true }),
+      successMessage: `Full promote requested for ${rolloutDisplayName}`,
+      failureFallback: "Failed to fully promote rollout.",
+    });
+  };
 
-    const promoteSkipCurrentRollout = async () => {
-      await runGuardedArgoMutation({
-        risk: "low",
-        actionLabel: "Skip Current Step",
-        resourceName: rolloutDisplayName,
-        run: () => requestRolloutPromotion(rolloutStore, object, { skipCurrentStep: true }),
-        successMessage: `Skip current step requested for ${rolloutDisplayName}`,
-        failureFallback: "Failed to skip current step.",
-      });
-    };
+  const promoteSkipCurrentRollout = async () => {
+    await runGuardedArgoMutation({
+      risk: "low",
+      actionLabel: "Skip Current Step",
+      resourceName: rolloutDisplayName,
+      run: () => requestRolloutPromotion(rolloutStore, object, { skipCurrentStep: true }),
+      successMessage: `Skip current step requested for ${rolloutDisplayName}`,
+      failureFallback: "Failed to skip current step.",
+    });
+  };
 
-    const promoteSkipAllRollout = async () => {
-      await runGuardedArgoMutation({
-        risk: "low",
-        actionLabel: "Skip All Steps",
-        resourceName: rolloutDisplayName,
-        run: () => requestRolloutPromotion(rolloutStore, object, { skipAllSteps: true }),
-        successMessage: `Skip all steps requested for ${rolloutDisplayName}`,
-        failureFallback: "Failed to skip all steps.",
-      });
-    };
+  const promoteSkipAllRollout = async () => {
+    await runGuardedArgoMutation({
+      risk: "low",
+      actionLabel: "Skip All Steps",
+      resourceName: rolloutDisplayName,
+      run: () => requestRolloutPromotion(rolloutStore, object, { skipAllSteps: true }),
+      successMessage: `Skip all steps requested for ${rolloutDisplayName}`,
+      failureFallback: "Failed to skip all steps.",
+    });
+  };
 
-    const handleAbortRollout = async () => {
-      await runGuardedArgoMutation({
-        risk: "destructive",
-        actionLabel: "Abort",
-        resourceName: rolloutDisplayName,
-        run: () => abortRollout(rolloutStore, object),
-        successMessage: `Abort requested for ${rolloutDisplayName}`,
-        failureFallback: "Failed to abort rollout.",
-        confirm: getAbortRolloutConfirmCopy(rolloutDisplayName),
-      });
-    };
+  const handleAbortRollout = async () => {
+    await runGuardedArgoMutation({
+      risk: "destructive",
+      actionLabel: "Abort",
+      resourceName: rolloutDisplayName,
+      run: () => abortRollout(rolloutStore, object),
+      successMessage: `Abort requested for ${rolloutDisplayName}`,
+      failureFallback: "Failed to abort rollout.",
+      confirm: getAbortRolloutConfirmCopy(rolloutDisplayName),
+    });
+  };
 
-    const handleRetryRollout = async () => {
-      await runGuardedArgoMutation({
-        risk: "low",
-        actionLabel: "Retry",
-        resourceName: rolloutDisplayName,
-        run: () => retryRollout(rolloutStore, object),
-        successMessage: `Retry requested for ${rolloutDisplayName}`,
-        failureFallback: "Failed to retry rollout.",
-      });
-    };
+  const handleRetryRollout = async () => {
+    await runGuardedArgoMutation({
+      risk: "low",
+      actionLabel: "Retry",
+      resourceName: rolloutDisplayName,
+      run: () => retryRollout(rolloutStore, object),
+      successMessage: `Retry requested for ${rolloutDisplayName}`,
+      failureFallback: "Failed to retry rollout.",
+    });
+  };
 
-    return (
-      <>
-        <DrawerTitle>Rollout</DrawerTitle>
-        <DrawerItem name="Strategy">
-          <WithTooltip>{getRolloutStrategyLabel(spec?.strategy)}</WithTooltip>
+  return (
+    <>
+      <DrawerTitle>Rollout</DrawerTitle>
+      <DrawerItem name="Strategy">
+        <WithTooltip>{getRolloutStrategyLabel(spec?.strategy)}</WithTooltip>
+      </DrawerItem>
+      <DrawerItem name="Replicas (spec)">{formatOptionalValue(spec?.replicas)}</DrawerItem>
+      <DrawerItem name="Replicas (status)">{formatOptionalValue(status?.replicas)}</DrawerItem>
+      <DrawerItem name="Updated">{formatOptionalValue(status?.updatedReplicas)}</DrawerItem>
+      <DrawerItem name="Ready">{formatOptionalValue(status?.readyReplicas)}</DrawerItem>
+      <DrawerItem name="Available">{formatOptionalValue(status?.availableReplicas)}</DrawerItem>
+      <DrawerItem name="Phase">
+        <StatusBadge status={status?.phase} />
+      </DrawerItem>
+      <DrawerItem name="State">{rolloutStateLabel}</DrawerItem>
+      <DrawerItem name="State reason">
+        <WithTooltip>{rolloutStateReason}</WithTooltip>
+      </DrawerItem>
+      <DrawerItem name="Paused">{paused ? "Yes" : "No"}</DrawerItem>
+      {showPromoteAction ||
+      showPromoteFullAction ||
+      showPromoteSkipCurrent ||
+      showPromoteSkipAll ||
+      showAbortAction ||
+      showRetryAction ? (
+        <DrawerItem name="Actions">
+          {showPromoteAction ? <Button onClick={promoteRollout}>Promote</Button> : null}
+          {showPromoteFullAction ? <Button onClick={promoteFullRollout}>Promote full</Button> : null}
+          {showPromoteSkipCurrent ? <Button onClick={promoteSkipCurrentRollout}>Skip current step</Button> : null}
+          {showPromoteSkipAll ? <Button onClick={promoteSkipAllRollout}>Skip all steps</Button> : null}
+          {showAbortAction ? <Button onClick={handleAbortRollout}>Abort</Button> : null}
+          {showRetryAction ? <Button onClick={handleRetryRollout}>Retry</Button> : null}
         </DrawerItem>
-        <DrawerItem name="Replicas (spec)">{formatOptionalValue(spec?.replicas)}</DrawerItem>
-        <DrawerItem name="Replicas (status)">{formatOptionalValue(status?.replicas)}</DrawerItem>
-        <DrawerItem name="Updated">{formatOptionalValue(status?.updatedReplicas)}</DrawerItem>
-        <DrawerItem name="Ready">{formatOptionalValue(status?.readyReplicas)}</DrawerItem>
-        <DrawerItem name="Available">{formatOptionalValue(status?.availableReplicas)}</DrawerItem>
-        <DrawerItem name="Phase">
-          <StatusBadge status={status?.phase} />
-        </DrawerItem>
-        <DrawerItem name="State">{rolloutStateLabel}</DrawerItem>
-        <DrawerItem name="State reason">
-          <WithTooltip>{rolloutStateReason}</WithTooltip>
-        </DrawerItem>
-        <DrawerItem name="Paused">{paused ? "Yes" : "No"}</DrawerItem>
-        {showPromoteAction ||
-        showPromoteFullAction ||
-        showPromoteSkipCurrent ||
-        showPromoteSkipAll ||
-        showAbortAction ||
-        showRetryAction ? (
-          <DrawerItem name="Actions">
-            {showPromoteAction ? <Button onClick={promoteRollout}>Promote</Button> : null}
-            {showPromoteFullAction ? <Button onClick={promoteFullRollout}>Promote full</Button> : null}
-            {showPromoteSkipCurrent ? <Button onClick={promoteSkipCurrentRollout}>Skip current step</Button> : null}
-            {showPromoteSkipAll ? <Button onClick={promoteSkipAllRollout}>Skip all steps</Button> : null}
-            {showAbortAction ? <Button onClick={handleAbortRollout}>Abort</Button> : null}
-            {showRetryAction ? <Button onClick={handleRetryRollout}>Retry</Button> : null}
-          </DrawerItem>
-        ) : null}
-        <DrawerItem name="Current pod hash">{formatOptionalValue(status?.currentPodHash)}</DrawerItem>
-        <DrawerItem name="Stable RS">{formatOptionalValue(status?.stableRS)}</DrawerItem>
-        <DrawerItem name="Current step index">{formatOptionalValue(status?.currentStepIndex)}</DrawerItem>
-        <DrawerItem name="Observed generation">{formatOptionalValue(status?.observedGeneration)}</DrawerItem>
-        <DrawerItem name="Message">
-          <WithTooltip>{formatOptionalValue(status?.message)}</WithTooltip>
-        </DrawerItem>
+      ) : null}
+      <DrawerItem name="Current pod hash">{formatOptionalValue(status?.currentPodHash)}</DrawerItem>
+      <DrawerItem name="Stable RS">{formatOptionalValue(status?.stableRS)}</DrawerItem>
+      <DrawerItem name="Current step index">{formatOptionalValue(status?.currentStepIndex)}</DrawerItem>
+      <DrawerItem name="Observed generation">{formatOptionalValue(status?.observedGeneration)}</DrawerItem>
+      <DrawerItem name="Message">
+        <WithTooltip>{formatOptionalValue(status?.message)}</WithTooltip>
+      </DrawerItem>
 
-        {isBlueGreen ? (
-          <>
-            <Gutter size="md" />
-            <DrawerTitle>BlueGreen Status</DrawerTitle>
-            <DrawerItem name="Promotion state">{getBlueGreenPromotionLabel(object)}</DrawerItem>
-            <DrawerItem name="Active selector">{formatOptionalValue(status?.blueGreen?.activeSelector)}</DrawerItem>
-            <DrawerItem name="Preview selector">{formatOptionalValue(status?.blueGreen?.previewSelector)}</DrawerItem>
-            <DrawerItem name="Stable RS">{formatOptionalValue(status?.stableRS)}</DrawerItem>
-            <DrawerItem name="Current pod hash">{formatOptionalValue(status?.currentPodHash)}</DrawerItem>
-          </>
-        ) : null}
+      {isBlueGreen ? (
+        <>
+          <Gutter size="md" />
+          <DrawerTitle>BlueGreen Status</DrawerTitle>
+          <DrawerItem name="Promotion state">{getBlueGreenPromotionLabel(object)}</DrawerItem>
+          <DrawerItem name="Active selector">{formatOptionalValue(status?.blueGreen?.activeSelector)}</DrawerItem>
+          <DrawerItem name="Preview selector">{formatOptionalValue(status?.blueGreen?.previewSelector)}</DrawerItem>
+          <DrawerItem name="Stable RS">{formatOptionalValue(status?.stableRS)}</DrawerItem>
+          <DrawerItem name="Current pod hash">{formatOptionalValue(status?.currentPodHash)}</DrawerItem>
+        </>
+      ) : null}
 
-        <Gutter size="md" />
+      <Gutter size="md" />
 
-        <DrawerTitle>Conditions</DrawerTitle>
-        <ConditionsList conditions={status?.conditions} mode="compact" />
+      <DrawerTitle>Conditions</DrawerTitle>
+      <ConditionsList conditions={status?.conditions} mode="compact" />
 
-        <Gutter size="md" />
-        <DrawerTitle>Related AnalysisRuns</DrawerTitle>
-        {analysisRuns.length === 0 ? (
-          <DrawerItem name="Summary">None</DrawerItem>
-        ) : (
-          analysisRuns.map((analysisRun) => {
-            const analysisRunName = analysisRun.getName();
-            const detailsUrl = getDetailsUrl(
-              analysisRunStore.api.formatUrlForNotListing({
-                namespace: analysisRun.getNs(),
-                name: analysisRunName,
-              }),
-            );
+      <Gutter size="md" />
+      <DrawerTitle>Related AnalysisRuns</DrawerTitle>
+      {analysisRuns.length === 0 ? (
+        <DrawerItem name="Summary">None</DrawerItem>
+      ) : (
+        analysisRuns.map((analysisRun) => {
+          const analysisRunName = analysisRun.getName();
+          const detailsUrl = getDetailsUrl(
+            analysisRunStore.api.formatUrlForNotListing({
+              namespace: analysisRun.getNs(),
+              name: analysisRunName,
+            }),
+          );
 
-            return (
-              <DrawerItem key={analysisRunName} name={analysisRunName}>
-                <Link to={detailsUrl}>
-                  <WithTooltip>{getAnalysisRunPhase(analysisRun)}</WithTooltip>
-                </Link>
-              </DrawerItem>
-            );
-          })
-        )}
+          return (
+            <DrawerItem key={analysisRunName} name={analysisRunName}>
+              <MaybeLink to={detailsUrl}>
+                <WithTooltip>{getAnalysisRunPhase(analysisRun)}</WithTooltip>
+              </MaybeLink>
+            </DrawerItem>
+          );
+        })
+      )}
 
-        <Gutter size="md" />
-        <ResourceEventsSection
-          resource={{
-            uid: object.metadata?.uid,
-            name: object.getName?.() ?? object.metadata?.name,
-            namespace: object.getNs?.() ?? object.metadata?.namespace,
-            kind: object.kind,
-            apiVersion: object.apiVersion,
-          }}
-        />
-      </>
-    );
-  });
+      <Gutter size="md" />
+      <ResourceEventsSection
+        resource={{
+          uid: object.metadata?.uid,
+          name: object.getName?.() ?? object.metadata?.name,
+          namespace: object.getNs?.() ?? object.metadata?.namespace,
+          kind: object.kind,
+          apiVersion: object.apiVersion,
+        }}
+      />
+    </>
+  );
 });

@@ -35,9 +35,9 @@ export async function start(): Promise<StartResult> {
   const app = await electron.launch({
     executablePath,
     args: [],
-    env: {
-      ...process.env,
-    },
+    env: Object.fromEntries(
+      Object.entries(process.env).filter((entry): entry is [string, string] => entry[1] !== undefined),
+    ),
   });
 
   const firstWindow = await app.firstWindow();

@@ -27,3 +27,16 @@
   color: var(--muted);
   font-size: 0.875rem;
 }
+
+.link {
+  color: var(--colorInfo, var(--textColorPrimary));
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

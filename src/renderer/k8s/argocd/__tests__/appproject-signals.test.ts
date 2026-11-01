@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { getAppProjectDestinationCount, getAppProjectSyncWindowCount } from "../appproject-signals";
 
 describe("appproject signals", () => {
